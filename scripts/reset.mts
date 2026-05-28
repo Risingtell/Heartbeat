@@ -1,0 +1,14 @@
+import "dotenv/config";
+import { createPublicClient, createWalletClient, http, defineChain } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import deployments from "../deployments.json" with { type: "json" };
+const RPC = "https://aeneid.storyrpc.io";
+const aeneid = defineChain({ id:1315, name:"Story Aeneid", nativeCurrency:{name:"IP",symbol:"IP",decimals:18}, rpcUrls:{default:{http:[RPC]}} });
+const acct = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const pc = createPublicClient({ chain: aeneid, transport: http(RPC) });
+const wc = createWalletClient({ account: acct, chain: aeneid, transport: http(RPC) });
+const DMS = deployments.aeneid.deadManSwitch as `0x${string}`;
+const abi = [{type:"function",name:"revoke",stateMutability:"nonpayable",inputs:[],outputs:[]}] as const;
+const hash = await wc.writeContract({ address: DMS, abi, functionName: "revoke", args: [], account: acct, chain: aeneid });
+await pc.waitForTransactionReceipt({ hash });
+console.log("revoked switch for", acct.address, "tx", hash);

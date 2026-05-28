@@ -1,0 +1,14 @@
+import "dotenv/config";
+import { createPublicClient, http, defineChain } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import deployments from "../deployments.json" with { type: "json" };
+const RPC = "https://aeneid.storyrpc.io";
+const aeneid = defineChain({ id:1315, name:"Story Aeneid", nativeCurrency:{name:"IP",symbol:"IP",decimals:18}, rpcUrls:{default:{http:[RPC]}} });
+const pc = createPublicClient({ chain: aeneid, transport: http(RPC) });
+const DMS = deployments.aeneid.deadManSwitch as `0x${string}`;
+const abi = [{type:"function",name:"getSwitch",stateMutability:"view",inputs:[{name:"o",type:"address"}],outputs:[{name:"heir",type:"address"},{name:"period",type:"uint64"},{name:"lastPing",type:"uint64"},{name:"challengeWindow",type:"uint64"},{name:"triggeredAt",type:"uint64"},{name:"guardianThreshold",type:"uint32"},{name:"attestations",type:"uint32"},{name:"active",type:"bool"},{name:"claimable",type:"bool"}]}] as const;
+const owner = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`).address;
+console.log("DMS:", DMS);
+console.log("throwaway owner:", owner);
+const s = await pc.readContract({ address: DMS, abi, functionName: "getSwitch", args: [owner] });
+console.log("getSwitch ->", JSON.stringify(s, (_,v)=>typeof v==="bigint"?v.toString():v, 2));
