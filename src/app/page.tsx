@@ -7,7 +7,8 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         {/* Hero */}
-        <section className="mx-auto max-w-6xl px-5 pt-20 pb-16 text-center">
+        <section className="mx-auto max-w-6xl px-5 pt-16 pb-12 text-center">
+          <div className="text-7xl text-accent animate-heartbeat mb-6 leading-none">♥</div>
           <p className="inline-flex items-center gap-2 rounded-full bg-accent-soft text-accent-deep px-3 py-1 text-xs font-medium">
             <span className="animate-heartbeat">♥</span> Proof-of-life vaults · powered by Story CDR
           </p>
@@ -34,6 +35,42 @@ export default function Home() {
             </Link>
           </div>
           <p className="mt-4 text-xs text-muted">Runs on Story Aeneid testnet · your secret is encrypted in your browser</p>
+        </section>
+
+        {/* Dashboard preview */}
+        <section className="mx-auto max-w-3xl px-5 pb-16">
+          <p className="text-center text-xs uppercase tracking-wider text-muted mb-3">A peek at your dashboard</p>
+          <div className="rounded-2xl border border-[--border] bg-card shadow-xl p-6 sm:p-10">
+            <div className="text-center">
+              <div className="text-5xl text-accent animate-heartbeat leading-none">♥</div>
+              <h3 className="mt-3 text-2xl font-semibold tracking-tight">Active &amp; sealed</h3>
+              <p className="mt-1 text-muted">
+                Your beneficiary can unlock in{" "}
+                <span className="font-semibold text-[--foreground]">29d 14h</span> if you stop checking in.
+              </p>
+              <div className="mt-6 inline-flex rounded-xl bg-accent text-white font-medium px-8 py-3.5">
+                ♥ I&apos;m still here
+              </div>
+            </div>
+            <dl className="mt-7 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+              <div className="rounded-xl bg-background px-3 py-2.5">
+                <dt className="text-xs text-muted">Beneficiary</dt>
+                <dd className="mt-0.5 font-medium font-mono text-sm">mom@…</dd>
+              </div>
+              <div className="rounded-xl bg-background px-3 py-2.5">
+                <dt className="text-xs text-muted">Window</dt>
+                <dd className="mt-0.5 font-medium">30d</dd>
+              </div>
+              <div className="rounded-xl bg-background px-3 py-2.5">
+                <dt className="text-xs text-muted">Last heartbeat</dt>
+                <dd className="mt-0.5 font-medium">2h 14m ago</dd>
+              </div>
+              <div className="rounded-xl bg-background px-3 py-2.5">
+                <dt className="text-xs text-muted">Guardians</dt>
+                <dd className="mt-0.5 font-medium">2 of 3</dd>
+              </div>
+            </dl>
+          </div>
         </section>
 
         {/* How it works */}

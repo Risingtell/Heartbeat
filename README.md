@@ -4,7 +4,7 @@
 
 Heartbeat is a proof-of-life vault for crypto inheritance, built on Story's [Confidential Data Rails (CDR)](https://www.story.foundation/blog/confidential-data-rails). You encrypt your seed phrase and final wishes into an on-chain vault. You check in now and then. If you ever go silent, the people you choose can recover them — and no one, not even us, ever sees the secret.
 
-🔗 **Live demo:** https://heartbeat-alpha-tawny.vercel.app
+🔗 **Live demo:** https://heartbeatvault.vercel.app
 🏗️ Built for the **CDR Hackathon** (Story Foundation).
 
 ---
