@@ -1,39 +1,106 @@
 @import "tailwindcss";
 
-/* Heartbeat — calm, trustworthy palette (warm paper + deep teal) */
+/* Heartbeat — refined design system (warm paper, deep teal, sophisticated depth) */
 :root {
-  --background: #f7f5f1;
-  --foreground: #1c2421;
+  --background: #faf8f4;
+  --surface: #ffffff;
+  --surface-2: #f3efe6;
+  --foreground: #0e1a17;
+  --foreground-soft: #2a3733;
   --muted: #5c6b65;
-  --card: #ffffff;
-  --border: #e4e0d8;
+  --muted-soft: #8a958f;
+  --border: #e6e0d3;
+  --border-soft: #efebe1;
   --accent: #0d9488;
   --accent-deep: #0f5f57;
   --accent-soft: #d7efe9;
+  --accent-glow: #99e0d4;
+  --warm: #b4533a;
+  --warm-soft: #f5e2da;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
+  --color-foreground-soft: var(--foreground-soft);
   --color-muted: var(--muted);
-  --color-card: var(--card);
+  --color-muted-soft: var(--muted-soft);
   --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
   --color-accent: var(--accent);
   --color-accent-deep: var(--accent-deep);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-glow: var(--accent-glow);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --color-card: var(--surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* gentle pulse for the heartbeat motif */
+.font-display {
+  font-family: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.02em;
+}
+
+/* Soft radial glow behind the hero */
+.hero-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(13, 148, 136, 0.10), transparent 70%),
+    radial-gradient(40% 30% at 80% 10%, rgba(180, 83, 58, 0.06), transparent 70%);
+}
+
+/* Subtle dotted grid for visual interest behind the preview card */
+.dot-grid {
+  background-image: radial-gradient(rgba(14, 26, 23, 0.08) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* Heartbeat motif */
 @keyframes heartbeat-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.12); opacity: 0.85; }
 }
 .animate-heartbeat { animation: heartbeat-pulse 2.4s ease-in-out infinite; }
+
+/* Soft float for badges */
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-float { animation: gentle-float 4s ease-in-out infinite; }
+
+/* Fade-up for hero on mount */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.7s ease-out both; }
+
+/* Heart with soft halo */
+.heart-halo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.heart-halo::before {
+  content: "";
+  position: absolute;
+  inset: -28%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.25), transparent 65%);
+  filter: blur(8px);
+  z-index: -1;
+}

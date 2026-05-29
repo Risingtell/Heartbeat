@@ -6,110 +6,275 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        {/* Hero */}
-        <section className="mx-auto max-w-6xl px-5 pt-16 pb-12 text-center">
-          <div className="text-7xl text-accent animate-heartbeat mb-6 leading-none">♥</div>
-          <p className="inline-flex items-center gap-2 rounded-full bg-accent-soft text-accent-deep px-3 py-1 text-xs font-medium">
-            <span className="animate-heartbeat">♥</span> Proof-of-life vaults · powered by Story CDR
-          </p>
-          <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
-            Your keys shouldn&apos;t<br className="hidden sm:block" /> die with you.
-          </h1>
-          <p className="mt-6 mx-auto max-w-2xl text-lg text-muted">
-            Billions in crypto are lost forever because seed phrases vanish with their owners. Heartbeat lets you
-            encrypt your recovery phrase and final wishes on-chain. Check in now and then. If you ever go silent,
-            the people you choose can recover them — and no one, not even us, ever sees the secret.
-          </p>
-          <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/vault"
-              className="rounded-xl bg-accent hover:bg-accent-deep transition-colors text-white font-medium px-6 py-3.5 shadow-sm"
-            >
-              Create your vault
-            </Link>
-            <Link
-              href="/claim"
-              className="rounded-xl border border-[--border] bg-card hover:border-accent transition-colors font-medium px-6 py-3.5"
-            >
-              I&apos;m a beneficiary
-            </Link>
+        {/* ─────────────────────────────  Hero  ───────────────────────────── */}
+        <section className="relative overflow-hidden">
+          <div className="hero-glow absolute inset-0 -z-10" />
+          <div className="mx-auto max-w-6xl px-5 pt-20 sm:pt-28 pb-16 text-center animate-fade-up">
+            <div className="heart-halo mx-auto mb-7 text-accent text-[64px] leading-none animate-heartbeat">♥</div>
+            <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium text-accent-deep">
+              <span className="h-1 w-1 rounded-full bg-accent" /> Powered by Story · Confidential Data Rails
+            </p>
+            <h1 className="mt-5 text-5xl sm:text-7xl leading-[1.02] tracking-tight font-semibold">
+              Your keys shouldn&apos;t<br />
+              <span className="font-display italic text-accent-deep font-normal">die with you.</span>
+            </h1>
+            <p className="mt-7 mx-auto max-w-2xl text-lg sm:text-xl text-foreground-soft leading-relaxed">
+              Encrypt your seed phrase and final wishes into a proof-of-life vault on-chain. Check in now and
+              then. If you ever go silent, the people you choose can recover them — and no one, not even us,
+              ever sees the secret.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/vault"
+                className="group rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-7 py-3.5 shadow-sm hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-accent/40"
+              >
+                Seal your first vault
+                <span className="ml-1 transition-transform inline-block group-hover:translate-x-0.5">→</span>
+              </Link>
+              <Link
+                href="/claim"
+                className="rounded-xl border border-border bg-surface hover:border-accent text-foreground font-medium px-7 py-3.5 transition-colors"
+              >
+                I&apos;m a beneficiary
+              </Link>
+            </div>
+            <div className="mt-7 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <Check /> Encrypted in your browser
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check /> No wallet needed for heirs
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check /> Story Aeneid testnet
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Check /> Open source
+              </span>
+            </div>
           </div>
-          <p className="mt-4 text-xs text-muted">Runs on Story Aeneid testnet · your secret is encrypted in your browser</p>
         </section>
 
-        {/* Dashboard preview */}
-        <section className="mx-auto max-w-3xl px-5 pb-16">
-          <p className="text-center text-xs uppercase tracking-wider text-muted mb-3">A peek at your dashboard</p>
-          <div className="rounded-2xl border border-[--border] bg-card shadow-xl p-6 sm:p-10">
-            <div className="text-center">
-              <div className="text-5xl text-accent animate-heartbeat leading-none">♥</div>
-              <h3 className="mt-3 text-2xl font-semibold tracking-tight">Active &amp; sealed</h3>
-              <p className="mt-1 text-muted">
-                Your beneficiary can unlock in{" "}
-                <span className="font-semibold text-[--foreground]">29d 14h</span> if you stop checking in.
-              </p>
-              <div className="mt-6 inline-flex rounded-xl bg-accent text-white font-medium px-8 py-3.5">
-                ♥ I&apos;m still here
+        {/* ──────────────────────  Dashboard preview  ────────────────────── */}
+        <section className="relative pb-24">
+          <div className="dot-grid absolute inset-0 -z-10 opacity-60" />
+          <div className="mx-auto max-w-4xl px-5">
+            <div className="rounded-3xl border border-border bg-surface shadow-2xl overflow-hidden">
+              {/* Faux browser chrome */}
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border-soft bg-surface-2">
+                <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                <span className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
+                <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                <div className="mx-auto rounded-md bg-surface border border-border px-3 py-1 text-[11px] text-muted font-mono">
+                  heartbeatvault.vercel.app/vault
+                </div>
+              </div>
+              {/* Dashboard body */}
+              <div className="px-6 sm:px-10 py-10">
+                <div className="text-center">
+                  <div className="heart-halo mx-auto text-accent text-5xl leading-none animate-heartbeat">♥</div>
+                  <h3 className="mt-4 text-3xl font-semibold tracking-tight">Active &amp; sealed</h3>
+                  <p className="mt-2 text-foreground-soft">
+                    Your beneficiary can unlock in{" "}
+                    <span className="font-semibold text-foreground">29d 14h 02m</span> if you stop checking in.
+                  </p>
+                  <div className="mt-7 inline-flex items-center gap-2 rounded-xl bg-accent text-white font-medium px-8 py-3.5 shadow-md">
+                    <span className="text-base">♥</span> I&apos;m still here
+                  </div>
+                </div>
+                <dl className="mt-9 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+                  {[
+                    ["Beneficiary", "mom@email.com"],
+                    ["Window", "30 days"],
+                    ["Last heartbeat", "2h 14m ago"],
+                    ["Guardians", "2 of 3"],
+                  ].map(([k, v]) => (
+                    <div key={k} className="rounded-xl bg-surface-2 border border-border-soft px-3.5 py-3">
+                      <dt className="text-[11px] uppercase tracking-wider text-muted">{k}</dt>
+                      <dd className="mt-1 font-medium text-foreground">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
             </div>
-            <dl className="mt-7 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
-              <div className="rounded-xl bg-background px-3 py-2.5">
-                <dt className="text-xs text-muted">Beneficiary</dt>
-                <dd className="mt-0.5 font-medium font-mono text-sm">mom@…</dd>
+            {/* Floating badges */}
+            <div className="hidden md:flex justify-between -mt-4 px-8">
+              <div className="rounded-full border border-border bg-surface shadow-md px-3 py-1.5 text-xs flex items-center gap-2 animate-float">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" /> Encrypted client-side
               </div>
-              <div className="rounded-xl bg-background px-3 py-2.5">
-                <dt className="text-xs text-muted">Window</dt>
-                <dd className="mt-0.5 font-medium">30d</dd>
+              <div className="rounded-full border border-border bg-surface shadow-md px-3 py-1.5 text-xs flex items-center gap-2 animate-float" style={{ animationDelay: "1.2s" }}>
+                ♥ Live on Aeneid
               </div>
-              <div className="rounded-xl bg-background px-3 py-2.5">
-                <dt className="text-xs text-muted">Last heartbeat</dt>
-                <dd className="mt-0.5 font-medium">2h 14m ago</dd>
-              </div>
-              <div className="rounded-xl bg-background px-3 py-2.5">
-                <dt className="text-xs text-muted">Guardians</dt>
-                <dd className="mt-0.5 font-medium">2 of 3</dd>
-              </div>
-            </dl>
+            </div>
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="border-y border-[--border] bg-card">
-          <div className="mx-auto max-w-6xl px-5 py-16 grid gap-10 sm:grid-cols-3">
+        {/* ─────────────────────  How it works  ────────────────────── */}
+        <section className="border-y border-border bg-surface">
+          <div className="mx-auto max-w-6xl px-5 py-24">
+            <div className="text-center max-w-2xl mx-auto">
+              <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">How it works</p>
+              <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
+                Three steps. <span className="font-display italic font-normal text-accent-deep">No trust required.</span>
+              </h2>
+            </div>
+            <div className="mt-16 grid gap-8 sm:grid-cols-3">
+              {[
+                {
+                  n: "01",
+                  t: "Seal your secret",
+                  d: "Write your seed phrase and a final message. It's encrypted in your browser and stored as an on-chain vault — the plaintext never leaves your device.",
+                },
+                {
+                  n: "02",
+                  t: "Stay alive, stay sealed",
+                  d: "A single click is your heartbeat. As long as you check in, the vault stays locked to everyone — including your heirs.",
+                },
+                {
+                  n: "03",
+                  t: "Pass it on",
+                  d: "If you go quiet past your chosen window — or your guardians attest — the people you named can finally unlock it. No lawyer, no middleman.",
+                },
+              ].map((s) => (
+                <div
+                  key={s.n}
+                  className="group rounded-2xl border border-border-soft bg-background hover:bg-surface hover:border-accent-glow transition-all p-7"
+                >
+                  <div className="font-display text-3xl text-accent-deep italic">{s.n}</div>
+                  <h3 className="mt-3 text-xl font-semibold">{s.t}</h3>
+                  <p className="mt-2 text-muted leading-relaxed">{s.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─────────────────────  Feature grid  ────────────────────── */}
+        <section className="mx-auto max-w-6xl px-5 py-24">
+          <div className="text-center max-w-2xl mx-auto">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">What makes it different</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
+              Built like <span className="font-display italic font-normal text-accent-deep">infrastructure</span>, designed for humans.
+            </h2>
+          </div>
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { n: "01", t: "Seal your secret", d: "Write your seed phrase and a final message. It's encrypted in your browser and stored as an on-chain vault — the plaintext never leaves your device." },
-              { n: "02", t: "Stay alive, stay sealed", d: "A single click is your heartbeat. As long as you check in, the vault stays locked to everyone — including your heirs." },
-              { n: "03", t: "Pass it on", d: "If you go quiet past your chosen window, the people you named (or your guardians together) can finally unlock it. No lawyer, no middleman." },
-            ].map((s) => (
-              <div key={s.n}>
-                <div className="text-accent font-mono text-sm">{s.n}</div>
-                <h3 className="mt-2 text-xl font-semibold">{s.t}</h3>
-                <p className="mt-2 text-muted leading-relaxed">{s.d}</p>
+              {
+                t: "Proof-of-life trigger",
+                d: "Automatic release on inactivity — not dependent on someone finding a piece of paper.",
+              },
+              {
+                t: "Email-based recovery",
+                d: "Beneficiaries unlock with email or Google — a wallet is created and gas-funded for them automatically.",
+              },
+              {
+                t: "Guardian quorum",
+                d: "An optional M-of-N of trusted people can attest and accelerate release, behind a challenge window you can cancel.",
+              },
+              {
+                t: "Time-locked & revocable",
+                d: "Set the window. Change beneficiaries. Cancel a false trigger. Rotate the secret. Paper can't.",
+              },
+              {
+                t: "Zero plaintext exposure",
+                d: "Split across a network of secure enclaves; nothing reassembled until the on-chain condition passes.",
+              },
+              {
+                t: "Composable on-chain",
+                d: "Any contract can read isClaimable() — Heartbeat vaults are programmable building blocks, not silos.",
+              },
+            ].map((f) => (
+              <div
+                key={f.t}
+                className="rounded-2xl border border-border-soft bg-surface p-6 hover:border-accent-glow hover:shadow-md transition-all"
+              >
+                <div className="text-accent text-xl">♥</div>
+                <h3 className="mt-3 font-semibold">{f.t}</h3>
+                <p className="mt-1.5 text-sm text-muted leading-relaxed">{f.d}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Trust */}
-        <section className="mx-auto max-w-3xl px-5 py-16 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight">Trust math, not people</h2>
-          <p className="mt-4 text-muted leading-relaxed">
-            Heartbeat is built on Confidential Data Rails. Your secret is split across a decentralized network of
-            secure enclaves and only reassembled when your on-chain conditions are met. There is no company holding
-            your keys, no database to breach, and no one to bribe.
+        {/* ─────────────────────  Trust math  ────────────────────── */}
+        <section className="border-y border-border bg-surface-2">
+          <div className="mx-auto max-w-3xl px-5 py-24 text-center">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">The security model</p>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
+              Trust math,<br />
+              <span className="font-display italic font-normal text-accent-deep">not people.</span>
+            </h2>
+            <p className="mt-6 text-foreground-soft leading-relaxed text-lg">
+              Heartbeat is built on Confidential Data Rails. Your secret is split across a decentralized network
+              of secure enclaves and only reassembled when your on-chain conditions are met. No company holds
+              your keys. No database to breach. No one to bribe — including us.
+            </p>
+            <div className="mt-10 grid sm:grid-cols-3 gap-3 text-sm">
+              {[
+                ["Client-side encryption", "Plaintext never leaves your device."],
+                ["On-chain conditions", "A custom contract gates every read."],
+                ["Threshold TEEs", "Keys reassemble only when conditions pass."],
+              ].map(([t, d]) => (
+                <div key={t} className="rounded-2xl bg-surface border border-border-soft p-5 text-left">
+                  <p className="font-medium">{t}</p>
+                  <p className="mt-1 text-muted text-sm">{d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─────────────────────  Final CTA  ────────────────────── */}
+        <section className="mx-auto max-w-3xl px-5 py-28 text-center">
+          <div className="heart-halo inline-flex text-accent text-6xl leading-none animate-heartbeat mb-7">♥</div>
+          <h2 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
+            Seal one in<br />
+            <span className="font-display italic font-normal text-accent-deep">under a minute.</span>
+          </h2>
+          <p className="mt-5 text-foreground-soft max-w-xl mx-auto">
+            Your seed phrase deserves better than a sticky note. Heartbeat takes a few clicks — and lasts
+            longer than you do.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3 text-sm text-muted">
-            <span>✓ Time-based release</span>
-            <span>✓ Trusted guardians</span>
-            <span>✓ Cancel anytime</span>
-            <span>✓ Zero plaintext exposure</span>
+          <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/vault"
+              className="rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-8 py-3.5 shadow-sm hover:shadow-md transition-all"
+            >
+              Create your vault
+            </Link>
+            <Link
+              href="/claim"
+              className="rounded-xl border border-border bg-surface hover:border-accent text-foreground font-medium px-8 py-3.5 transition-colors"
+            >
+              I&apos;m a beneficiary
+            </Link>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-[--border] py-8 text-center text-sm text-muted">
-        Heartbeat · built for the Story CDR Hackathon
+      <footer className="border-t border-border bg-surface">
+        <div className="mx-auto max-w-6xl px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
+          <p className="flex items-center gap-2">
+            <span className="text-accent">♥</span> Heartbeat · built for the Story CDR Hackathon
+          </p>
+          <p className="flex items-center gap-5">
+            <a className="hover:text-foreground transition-colors" href="https://github.com/Risingtell/Heartbeat" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            <a className="hover:text-foreground transition-colors" href="https://www.story.foundation/blog/confidential-data-rails" target="_blank" rel="noreferrer">
+              About CDR
+            </a>
+          </p>
+        </div>
       </footer>
     </>
+  );
+}
+
+function Check() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+      <path d="M2 7.5L5.5 11L12 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-accent" />
+    </svg>
   );
 }
