@@ -27,40 +27,69 @@ export default function VaultPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-2xl px-5 py-12 w-full">
-        {!ready ? (
-          <div className="text-muted">Loading…</div>
-        ) : !authenticated ? (
-          <div className="rounded-2xl border border-[--border] bg-card p-10 text-center">
-            <div className="text-4xl text-accent animate-heartbeat">♥</div>
-            <h1 className="mt-4 text-2xl font-semibold">Connect to begin</h1>
-            <p className="mt-2 text-muted">
-              Sign in with your wallet to create a vault and check in. (Creating a vault sends transactions, so use a funded wallet.)
-            </p>
-            <div className="mt-6 flex justify-center"><LoginButton label="Connect to begin" /></div>
-          </div>
-        ) : !address ? (
-          <div className="text-muted">Connecting your wallet…</div>
-        ) : isLoading ? (
-          <div className="text-muted">Loading your vault…</div>
-        ) : active && !forceSetup ? (
-          <VaultDashboard onReconfigure={() => setForceSetup(true)} />
-        ) : (
-          <>
-            {active && forceSetup && (
-              <button onClick={() => setForceSetup(false)} className="mb-4 text-sm text-accent-deep hover:underline">
-                ← Back to dashboard
-              </button>
-            )}
-            <SetupForm
-              onComplete={() => {
-                setForceSetup(false);
-                refetch();
-              }}
-            />
-          </>
-        )}
+      <main className="relative">
+        <div className="hero-glow absolute inset-x-0 top-0 h-80 -z-10" />
+        <div className="mx-auto max-w-3xl px-5 py-14 w-full">
+          {!ready ? (
+            <LoadingFrame label="Loading…" />
+          ) : !authenticated ? (
+            <ConnectGate />
+          ) : !address ? (
+            <LoadingFrame label="Connecting your wallet…" />
+          ) : isLoading ? (
+            <LoadingFrame label="Loading your vault…" />
+          ) : active && !forceSetup ? (
+            <VaultDashboard onReconfigure={() => setForceSetup(true)} />
+          ) : (
+            <>
+              {active && forceSetup && (
+                <button
+                  onClick={() => setForceSetup(false)}
+                  className="mb-5 inline-flex items-center gap-1 text-sm text-accent-deep hover:text-accent transition-colors"
+                >
+                  <span className="transition-transform inline-block group-hover:-translate-x-0.5">←</span> Back to dashboard
+                </button>
+              )}
+              <SetupForm
+                onComplete={() => {
+                  setForceSetup(false);
+                  refetch();
+                }}
+              />
+            </>
+          )}
+        </div>
       </main>
     </>
+  );
+}
+
+function ConnectGate() {
+  return (
+    <div className="relative rounded-3xl border border-border bg-surface overflow-hidden animate-fade-up">
+      <div className="hero-glow absolute inset-0 -z-10" />
+      <div className="px-6 sm:px-12 py-16 text-center">
+        <div className="heart-halo mx-auto text-accent text-6xl leading-none animate-heartbeat">♥</div>
+        <p className="mt-6 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium text-accent-deep">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" /> Your vault
+        </p>
+        <h1 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
+          Connect to <span className="font-display italic font-normal text-accent-deep">begin.</span>
+        </h1>
+        <p className="mt-3 text-foreground-soft max-w-md mx-auto">
+          Sign in with your wallet to create a vault and check in. Creating a vault sends transactions, so use a funded wallet.
+        </p>
+        <div className="mt-7 flex justify-center"><LoginButton label="Connect to begin" /></div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingFrame({ label }: { label: string }) {
+  return (
+    <div className="rounded-3xl border border-border bg-surface px-6 py-16 text-center">
+      <div className="heart-halo inline-flex text-accent text-3xl leading-none animate-heartbeat">♥</div>
+      <p className="mt-4 text-muted text-sm">{label}</p>
+    </div>
   );
 }

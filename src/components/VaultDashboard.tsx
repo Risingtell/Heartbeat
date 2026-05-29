@@ -32,7 +32,7 @@ export function VaultDashboard({ onReconfigure }: { onReconfigure: () => void })
 
   if (!sw) return <div className="text-muted">Loading your vault…</div>;
 
-  const [heir, period, lastPing, , triggeredAt, guardianThreshold, attestations, active, claimable] = sw as readonly [
+  const [heir, period, lastPing, , , guardianThreshold, attestations, , claimable] = sw as readonly [
     string, bigint, bigint, bigint, bigint, number, number, boolean, boolean
   ];
 
@@ -64,61 +64,102 @@ export function VaultDashboard({ onReconfigure }: { onReconfigure: () => void })
   }
 
   return (
-    <div className="space-y-6">
-      {/* Status hero */}
-      <div className="rounded-2xl border border-[--border] bg-card p-6 sm:p-8 text-center">
-        <div className={`text-5xl ${claimable ? "text-red-500" : "text-accent animate-heartbeat"}`}>♥</div>
-        <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-          {claimable ? "Released" : "Active & sealed"}
-        </h2>
-        <p className="mt-1 text-muted">
-          {claimable
-            ? "Your inactivity window has elapsed. Your beneficiary can now unlock the vault."
-            : <>Your beneficiary can unlock in <span className="font-semibold text-[--foreground]">{humanDuration(secondsLeft)}</span> if you stop checking in.</>}
-        </p>
+    <div className="space-y-6 animate-fade-up">
+      {/* ───────────────  Status hero  ─────────────── */}
+      <div className="relative rounded-3xl border border-border bg-surface overflow-hidden">
+        <div className="hero-glow absolute inset-0 -z-10 opacity-60" />
+        <div className="px-6 sm:px-10 py-12 text-center">
+          <div className={`heart-halo mx-auto text-5xl leading-none ${claimable ? "text-warm" : "text-accent animate-heartbeat"}`}>♥</div>
 
-        {!claimable && (
-          <button
-            onClick={() => tx("heartbeat", "heartbeat")}
-            disabled={pending === "heartbeat"}
-            className="mt-6 rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-8 py-3.5 disabled:opacity-50 transition-colors"
+          <p
+            className="mt-6 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium"
+            style={{ color: claimable ? "var(--warm)" : "var(--accent-deep)" }}
           >
-            {pending === "heartbeat" ? "Confirming…" : "♥ I'm still here"}
-          </button>
-        )}
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${claimable ? "bg-warm" : "bg-accent animate-heartbeat"}`}
+            />
+            {claimable ? "Released" : "Alive & sealed"}
+          </p>
 
-        <dl className="mt-7 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
-          <Stat label="Beneficiary" value={shortAddr(heir)} />
-          <Stat label="Window" value={humanDuration(Number(period))} />
-          <Stat label="Last heartbeat" value={`${humanDuration(now - Number(lastPing))} ago`} />
-          <Stat label="Guardians" value={guardianThreshold > 0 ? `${attestations}/${guardianThreshold}` : "none"} />
+          <h2 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.05]">
+            {claimable ? (
+              <>Your vault is <span className="font-display italic font-normal text-accent-deep">unlockable.</span></>
+            ) : (
+              <>Sealed, for <span className="font-display italic font-normal text-accent-deep">now.</span></>
+            )}
+          </h2>
+          <p className="mt-3 text-foreground-soft max-w-md mx-auto">
+            {claimable
+              ? "Your inactivity window has elapsed. Your beneficiary can now unlock the vault."
+              : <>Your beneficiary can unlock in <span className="font-semibold text-foreground">{humanDuration(secondsLeft)}</span> if you stop checking in.</>}
+          </p>
+
+          {!claimable && (
+            <button
+              onClick={() => tx("heartbeat", "heartbeat")}
+              disabled={pending === "heartbeat"}
+              className="group mt-7 rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-8 py-3.5 shadow-md hover:shadow-lg disabled:opacity-50 transition-all focus:outline-none focus:ring-2 focus:ring-accent/40"
+            >
+              {pending === "heartbeat" ? (
+                "Confirming…"
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <span className="inline-block group-hover:scale-110 transition-transform">♥</span>
+                  I&apos;m still here
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Stats strip */}
+        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border-soft border-t border-border-soft">
+          {[
+            ["Beneficiary", shortAddr(heir)],
+            ["Window", humanDuration(Number(period))],
+            ["Last heartbeat", `${humanDuration(now - Number(lastPing))} ago`],
+            ["Guardians", guardianThreshold > 0 ? `${attestations}/${guardianThreshold}` : "none"],
+          ].map(([k, v]) => (
+            <div key={k} className="bg-surface px-4 py-4">
+              <dt className="text-[11px] uppercase tracking-wider text-muted">{k}</dt>
+              <dd className="mt-1 font-medium text-foreground">{v}</dd>
+            </div>
+          ))}
         </dl>
-
-        <button
-          onClick={onReconfigure}
-          className="mt-6 rounded-xl border border-[--border] bg-background hover:border-accent transition-colors font-medium px-5 py-3 w-full sm:w-auto"
-        >
-          ⚙ Change beneficiary, window &amp; secret
-        </button>
       </div>
 
-      {/* Vaults */}
-      <div className="rounded-2xl border border-[--border] bg-card p-6 sm:p-8">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Your sealed vaults</h3>
-          <button onClick={onReconfigure} className="text-sm text-accent-deep hover:underline">+ New vault / update settings</button>
+      {/* ───────────────  Reconfigure CTA  ─────────────── */}
+      <button
+        onClick={onReconfigure}
+        className="group w-full rounded-2xl border border-border bg-surface hover:border-accent hover:bg-surface-2 transition-all px-5 py-4 text-left flex items-center justify-between gap-3"
+      >
+        <span>
+          <span className="block font-medium">Change beneficiary, window &amp; secret</span>
+          <span className="block text-xs text-muted mt-0.5">Update your settings or seal a fresh vault — current vault stays unchanged until you re-seal.</span>
+        </span>
+        <span className="text-muted group-hover:text-accent transition-colors text-lg">→</span>
+      </button>
+
+      {/* ───────────────  Vaults list  ─────────────── */}
+      <div className="rounded-2xl border border-border bg-surface overflow-hidden">
+        <div className="px-6 py-4 border-b border-border-soft flex items-center justify-between">
+          <p className="text-sm font-medium">Your sealed vaults</p>
+          <span className="text-xs text-muted">{vaults.length} on this device</span>
         </div>
         {vaults.length === 0 ? (
-          <p className="mt-3 text-muted text-sm">No vaults recorded on this device yet.</p>
+          <p className="px-6 py-8 text-muted text-sm">No vaults recorded on this device yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-[--border]">
+          <ul className="divide-y divide-border-soft">
             {vaults.map((v) => (
-              <li key={v.uuid} className="py-3 flex items-center justify-between gap-3">
+              <li key={v.uuid} className="px-6 py-4 flex items-center justify-between gap-3 hover:bg-surface-2 transition-colors">
                 <div>
                   <div className="font-medium">Vault #{v.uuid}</div>
-                  <div className="text-xs text-muted">to {shortAddr(v.heir)} · {new Date(v.createdAt).toLocaleDateString()}</div>
+                  <div className="text-xs text-muted mt-0.5">to {shortAddr(v.heir)} · {new Date(v.createdAt).toLocaleDateString()}</div>
                 </div>
-                <button onClick={() => copyLink(v.uuid)} className="text-sm rounded-lg border border-[--border] px-3 py-1.5 hover:border-accent transition-colors">
+                <button
+                  onClick={() => copyLink(v.uuid)}
+                  className="text-sm rounded-lg border border-border bg-background px-3.5 py-1.5 hover:border-accent transition-colors"
+                >
                   {copied === v.uuid ? "Copied!" : "Copy claim link"}
                 </button>
               </li>
@@ -127,37 +168,28 @@ export function VaultDashboard({ onReconfigure }: { onReconfigure: () => void })
         )}
       </div>
 
-      {/* Demo + danger controls */}
-      <div className="rounded-2xl border border-dashed border-[--border] bg-card/60 p-5 flex flex-wrap items-center justify-between gap-3">
+      {/* ───────────────  Demo + danger  ─────────────── */}
+      <div className="rounded-2xl border border-dashed border-border bg-surface/60 p-5 flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm text-muted">
-          <span className="font-medium text-[--foreground]">Demo controls</span> — simulate going inactive without waiting.
+          <span className="font-medium text-foreground">Demo controls</span> — simulate going inactive without waiting.
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => tx("demoExpire", "demoExpire")}
             disabled={pending === "demoExpire" || claimable}
-            className="text-sm rounded-lg border border-[--border] px-3 py-1.5 hover:border-accent disabled:opacity-40 transition-colors"
+            className="text-sm rounded-lg border border-border bg-background px-3.5 py-2 hover:border-accent disabled:opacity-40 transition-colors"
           >
             {pending === "demoExpire" ? "…" : "Simulate inactivity"}
           </button>
           <button
             onClick={() => tx("revoke", "revoke")}
             disabled={pending === "revoke"}
-            className="text-sm rounded-lg border border-red-200 text-red-600 px-3 py-1.5 hover:bg-red-50 disabled:opacity-40 transition-colors"
+            className="text-sm rounded-lg border border-warm/40 text-warm px-3.5 py-2 hover:bg-warm-soft disabled:opacity-40 transition-colors"
           >
             {pending === "revoke" ? "…" : "Revoke switch"}
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-background px-3 py-2.5">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-0.5 font-medium">{value}</dd>
     </div>
   );
 }
