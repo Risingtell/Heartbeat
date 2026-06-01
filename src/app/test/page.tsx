@@ -9,17 +9,26 @@ type Status = "idle" | "running" | "ok" | "fail";
 
 export default function TestPage() {
   const { address, walletClient } = useActiveWallet();
-  const [log, setLog] = useState<{ time: string; line: string; tone: "info" | "ok" | "fail" }[]>([]);
+  const [log, setLog] = useState<
+    { time: string; line: string; tone: "info" | "ok" | "fail" }[]
+  >([]);
   const [uuid, setUuid] = useState<number | null>(null);
   const [running, setRunning] = useState<string>("");
-  const [status, setStatus] = useState<{ wasm: Status; create: Status; read: Status }>({
+  const [status, setStatus] = useState<{
+    wasm: Status;
+    create: Status;
+    read: Status;
+  }>({
     wasm: "idle",
     create: "idle",
     read: "idle",
   });
 
   const push = (line: string, tone: "info" | "ok" | "fail" = "info") =>
-    setLog((l) => [...l, { time: new Date().toLocaleTimeString(), line, tone }]);
+    setLog((l) => [
+      ...l,
+      { time: new Date().toLocaleTimeString(), line, tone },
+    ]);
 
   async function testWasm() {
     setRunning("wasm");
@@ -48,13 +57,27 @@ export default function TestPage() {
     setStatus((s) => ({ ...s, create: "running" }));
     try {
       push("creating vault (encrypt + allocate + write)…");
-      const secret = new TextEncoder().encode("browser test secret " + Date.now());
-      const id = await createVault(walletClient, address, secret);
+      const secret = new TextEncoder().encode(
+        "browser test secret " + Date.now(),
+      );
+      // Dev round-trip: owner is its own heir, short window.
+      const id = await createVault(
+        walletClient,
+        address,
+        address,
+        120n,
+        secret,
+      );
       setUuid(id);
       push(`vault created, uuid=${id}`, "ok");
       setStatus((s) => ({ ...s, create: "ok" }));
     } catch (e) {
-      push((e as { shortMessage?: string; message?: string })?.shortMessage ?? (e as Error)?.message ?? String(e), "fail");
+      push(
+        (e as { shortMessage?: string; message?: string })?.shortMessage ??
+          (e as Error)?.message ??
+          String(e),
+        "fail",
+      );
       setStatus((s) => ({ ...s, create: "fail" }));
     } finally {
       setRunning("");
@@ -69,12 +92,19 @@ export default function TestPage() {
     setRunning("read");
     setStatus((s) => ({ ...s, read: "running" }));
     try {
-      push(`reading vault ${uuid} (gated — expected to fail unless conditions are met)…`);
+      push(
+        `reading vault ${uuid} (gated — expected to fail unless conditions are met)…`,
+      );
       const data = await readVault(walletClient, uuid);
       push("recovered: " + new TextDecoder().decode(data), "ok");
       setStatus((s) => ({ ...s, read: "ok" }));
     } catch (e) {
-      push((e as { shortMessage?: string; message?: string })?.shortMessage ?? (e as Error)?.message ?? String(e), "fail");
+      push(
+        (e as { shortMessage?: string; message?: string })?.shortMessage ??
+          (e as Error)?.message ??
+          String(e),
+        "fail",
+      );
       setStatus((s) => ({ ...s, read: "fail" }));
     } finally {
       setRunning("");
@@ -91,14 +121,19 @@ export default function TestPage() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium text-accent-deep">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" /> Developer
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" />{" "}
+                Developer
               </p>
               <h1 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
-                Browser <span className="font-display italic font-normal text-accent-deep">integration test.</span>
+                Browser{" "}
+                <span className="font-display italic font-normal text-accent-deep">
+                  integration test.
+                </span>
               </h1>
               <p className="mt-2 text-foreground-soft text-sm max-w-xl">
-                Confirms the CDR WASM + REST proxy + wallet transactions work end-to-end in the browser. Your
-                connected wallet needs Aeneid testnet IP for the create step.
+                Confirms the CDR WASM + REST proxy + wallet transactions work
+                end-to-end in the browser. Your connected wallet needs Aeneid
+                testnet IP for the create step.
               </p>
             </div>
             <LoginButton />
@@ -123,7 +158,9 @@ export default function TestPage() {
               busy={running === "create"}
               onRun={testCreate}
               disabled={running !== "" || !address}
-              disabledHint={!address ? "Connect a funded wallet first" : undefined}
+              disabledHint={
+                !address ? "Connect a funded wallet first" : undefined
+              }
             />
             <Step
               num="03"
@@ -144,7 +181,9 @@ export default function TestPage() {
               <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
               <span className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
               <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-              <p className="ml-2 text-[11px] uppercase tracking-wider text-muted font-mono">heartbeat / log</p>
+              <p className="ml-2 text-[11px] uppercase tracking-wider text-muted font-mono">
+                heartbeat / log
+              </p>
               {log.length > 0 && (
                 <button
                   onClick={() => setLog([])}
@@ -233,7 +272,8 @@ function StatusPill({ status, busy }: { status: Status; busy: boolean }) {
   if (busy) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft text-accent-deep text-[10px] uppercase tracking-wider px-1.5 py-0.5 font-medium">
-        <span className="h-1 w-1 rounded-full bg-accent animate-heartbeat" /> running
+        <span className="h-1 w-1 rounded-full bg-accent animate-heartbeat" />{" "}
+        running
       </span>
     );
   }

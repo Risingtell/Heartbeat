@@ -1,7 +1,7 @@
 {
   "aeneid": {
     "chainId": 1315,
-    "deadManSwitch": "0xc05747dcbddc6a69be52a4c4dba1a222632a32ee",
+    "deadManSwitch": "0x288fc0953f2fb44230449ddc34ef6d3c539b6843",
     "ownerWriteCondition": "0x4C9bFC96d7092b590D497A191826C3dA2277c34B",
     "cdrCore": "0xcccccc0000000000000000000000000000000005"
   }

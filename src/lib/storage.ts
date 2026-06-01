@@ -1,7 +1,12 @@
 // Lightweight local index of vaults a user has created, so the dashboard can
 // list them and build shareable claim links. (The on-chain switch state is the
 // source of truth; this just remembers vault uuids, which aren't enumerable on-chain.)
-export type VaultRecord = { uuid: number; heir: string; createdAt: number };
+export type VaultRecord = {
+  uuid: number;
+  heir: string;
+  period: number;
+  createdAt: number;
+};
 
 const key = (owner: string) => `heartbeat:vaults:${owner.toLowerCase()}`;
 
