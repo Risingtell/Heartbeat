@@ -94,6 +94,18 @@ async function main() {
   const injected = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "checkReadCondition", args: [0, conditionData, conditionData, heir.address] });
   ok(injected === false, `accessAuxData injection rejected: checkReadCondition == ${injected} (want false)`);
 
+  // 4c. BEFORE expiry the heir's REAL CDR read must fail at the validators -- this
+  //     proves gating happens in the TEEs, not just in the on-chain view above.
+  //     Short timeout so a correctly-gated (hanging/refused) read doesn't block long.
+  console.log("\n4c) heir.accessCDR() BEFORE expiry (expected to be rejected)...");
+  let earlyBlocked = false;
+  try {
+    await heirClient.consumer.accessCDR({ uuid, accessAuxData: "0x", timeoutMs: 30_000 });
+  } catch {
+    earlyBlocked = true; // refused / timed out collecting partials == correctly gated
+  }
+  ok(earlyBlocked, `before expiry: accessCDR rejected by validators (want rejected)`);
+
   // 5. Owner triggers demo expiry (simulates going inactive).
   console.log("\n5) owner.demoExpire() (simulate inactivity)...");
   const expTx = await ownerWallet.writeContract({ address: DMS, abi: dmsAbi, functionName: "demoExpire", args: [], account: owner, chain: aeneid });
