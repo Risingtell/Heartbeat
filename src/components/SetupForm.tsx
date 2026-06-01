@@ -10,9 +10,19 @@ import { publicClient } from "@/lib/viem";
 
 const MAX_SECRET_BYTES = 760;
 
-type Step = "idle" | "provisioning" | "configuring" | "allocating" | "done" | "error";
+type Step =
+  | "idle"
+  | "provisioning"
+  | "configuring"
+  | "allocating"
+  | "done"
+  | "error";
 
-export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }) {
+export function SetupForm({
+  onComplete,
+}: {
+  onComplete: (uuid: number) => void;
+}) {
   const { address, walletClient } = useActiveWallet();
 
   const [heirMode, setHeirMode] = useState<"email" | "address">("email");
@@ -29,9 +39,12 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
   const [step, setStep] = useState<Step>("idle");
   const [error, setError] = useState("");
   const [createdUuid, setCreatedUuid] = useState<number | null>(null);
+  const [sealedHeir, setSealedHeir] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const secretBytes = new TextEncoder().encode(`${seed.trim()}\n\n--- MESSAGE ---\n\n${message.trim()}`);
+  const secretBytes = new TextEncoder().encode(
+    `${seed.trim()}\n\n--- MESSAGE ---\n\n${message.trim()}`,
+  );
   const tooLong = secretBytes.length > MAX_SECRET_BYTES;
 
   const guardians = guardiansRaw
@@ -40,22 +53,37 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
     .filter((g) => g.length > 0);
   const guardiansValid = guardians.every((g) => isAddress(g));
 
-  const heirValid = isAddress(heir) && heir.toLowerCase() !== address?.toLowerCase();
+  const heirValid =
+    isAddress(heir) && heir.toLowerCase() !== address?.toLowerCase();
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(heirEmail.trim());
   const heirReady = heirMode === "address" ? heirValid : emailValid;
-  const guardiansOk = !advanced || (guardiansValid && threshold <= guardians.length);
+  const guardiansOk =
+    !advanced || (guardiansValid && threshold <= guardians.length);
   const ready = step === "idle" || step === "error";
   const canSubmit =
-    !!walletClient && !!address && heirReady && seed.trim().length > 0 && !tooLong && guardiansOk && ready;
+    !!walletClient &&
+    !!address &&
+    heirReady &&
+    seed.trim().length > 0 &&
+    !tooLong &&
+    guardiansOk &&
+    ready;
 
-  const disabledReason =
-    !address ? "Connect your wallet first." :
-    !walletClient ? "Wallet is still connecting — give it a second, then try again." :
-    !heirReady ? (heirMode === "email" ? "Enter a valid beneficiary email address." : "Enter a valid beneficiary wallet address (not your own).") :
-    seed.trim().length === 0 ? "Enter the recovery phrase or secret you want to protect." :
-    tooLong ? "Your secret + message is too long — shorten the message." :
-    !guardiansOk ? "Check the guardian addresses and the number required." :
-    "";
+  const disabledReason = !address
+    ? "Connect your wallet first."
+    : !walletClient
+      ? "Wallet is still connecting — give it a second, then try again."
+      : !heirReady
+        ? heirMode === "email"
+          ? "Enter a valid beneficiary email address."
+          : "Enter a valid beneficiary wallet address (not your own)."
+        : seed.trim().length === 0
+          ? "Enter the recovery phrase or secret you want to protect."
+          : tooLong
+            ? "Your secret + message is too long — shorten the message."
+            : !guardiansOk
+              ? "Check the guardian addresses and the number required."
+              : "";
 
   async function handleSubmit() {
     if (!walletClient || !address) return;
@@ -70,7 +98,8 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
           body: JSON.stringify({ email: heirEmail.trim() }),
         });
         const data = await res.json();
-        if (!res.ok || !data.address) throw new Error(data.error ?? "Could not set up the beneficiary");
+        if (!res.ok || !data.address)
+          throw new Error(data.error ?? "Could not set up the beneficiary");
         heirAddress = data.address;
       }
 
@@ -82,48 +111,77 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
         address: DEAD_MAN_SWITCH,
         abi: deadManSwitchAbi,
         functionName: "configure",
-        args: [heirAddress as Address, BigInt(periodSeconds), gList, gThreshold, challenge],
+        args: [gList, gThreshold, challenge],
         account: walletClient.account!,
         chain: walletClient.chain,
       });
       await publicClient.waitForTransactionReceipt({ hash: cfgHash });
 
       setStep("allocating");
-      const uuid = await createVault(walletClient, address as Address, secretBytes);
-      addVault(address, { uuid, heir: heirAddress, createdAt: Date.now() });
+      const uuid = await createVault(
+        walletClient,
+        address as Address,
+        heirAddress as Address,
+        BigInt(periodSeconds),
+        secretBytes,
+      );
+      addVault(address, {
+        uuid,
+        heir: heirAddress,
+        period: periodSeconds,
+        createdAt: Date.now(),
+      });
 
+      setSealedHeir(heirAddress);
       setCreatedUuid(uuid);
       setStep("done");
     } catch (e) {
-      const msg = (e as { shortMessage?: string; message?: string })?.shortMessage ?? (e as Error)?.message ?? String(e);
+      const msg =
+        (e as { shortMessage?: string; message?: string })?.shortMessage ??
+        (e as Error)?.message ??
+        String(e);
       setError(msg);
       setStep("error");
     }
   }
 
-  const busy = step === "provisioning" || step === "configuring" || step === "allocating";
+  const busy =
+    step === "provisioning" || step === "configuring" || step === "allocating";
 
   /* ───────────────────  Success / "sealed" state  ─────────────────── */
   if (step === "done" && createdUuid !== null) {
-    const link = `${typeof window !== "undefined" ? window.location.origin : ""}/claim?owner=${address}&uuid=${createdUuid}`;
+    const link = `${typeof window !== "undefined" ? window.location.origin : ""}/claim?owner=${address}&uuid=${createdUuid}&heir=${sealedHeir}&period=${periodSeconds}`;
     return (
       <div className="relative rounded-3xl border border-accent/40 bg-surface overflow-hidden animate-fade-up">
         <div className="hero-glow absolute inset-0 -z-10" />
         <div className="px-6 sm:px-12 py-14 text-center">
-          <div className="heart-halo mx-auto text-accent text-6xl leading-none animate-heartbeat">♥</div>
+          <div className="heart-halo mx-auto text-accent text-6xl leading-none animate-heartbeat">
+            ♥
+          </div>
           <p className="mt-6 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium text-accent-deep">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Sealed
           </p>
           <h2 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-tight">
-            Your vault is <span className="font-display italic font-normal text-accent-deep">protected.</span>
+            Your vault is{" "}
+            <span className="font-display italic font-normal text-accent-deep">
+              protected.
+            </span>
           </h2>
           <p className="mt-3 text-foreground-soft max-w-md mx-auto">
-            It&apos;s encrypted on-chain and locked to your heartbeat. Save this link and share it with your beneficiary — it only ever opens if you go silent.
+            It&apos;s encrypted on-chain and locked to your heartbeat. Save this
+            link and share it with your beneficiary — it only ever opens if you
+            go silent.
           </p>
           <div className="mt-7 flex items-center gap-2 rounded-xl bg-background border border-border p-2 max-w-lg mx-auto">
-            <code className="flex-1 text-xs text-left truncate px-2 font-mono text-foreground-soft">{link}</code>
+            <code className="flex-1 text-xs text-left truncate px-2 font-mono text-foreground-soft">
+              {link}
+            </code>
             <button
-              onClick={() => { navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+              onClick={() => {
+                navigator.clipboard.writeText(link);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
               className="rounded-lg bg-accent text-white px-3 py-1.5 text-sm font-medium hover:bg-accent-deep transition-colors shrink-0"
             >
               {copied ? "Copied!" : "Copy link"}
@@ -144,12 +202,18 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
   return (
     <div className="rounded-3xl border border-border bg-surface overflow-hidden animate-fade-up">
       <div className="px-6 sm:px-10 py-8 border-b border-border-soft">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">Create a vault</p>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">
+          Create a vault
+        </p>
         <h2 className="mt-2 text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
-          Set up your <span className="font-display italic font-normal text-accent-deep">vault.</span>
+          Set up your{" "}
+          <span className="font-display italic font-normal text-accent-deep">
+            vault.
+          </span>
         </h2>
         <p className="mt-2 text-foreground-soft">
-          Your secret is encrypted in your browser before it ever touches the network. We never see it.
+          Your secret is encrypted in your browser before it ever touches the
+          network. We never see it.
         </p>
       </div>
 
@@ -160,13 +224,15 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
           <FieldHint>Who can recover your secret if you go silent.</FieldHint>
           <div className="mt-3 inline-flex rounded-lg border border-border p-0.5 bg-background text-sm">
             <button
-              type="button" onClick={() => setHeirMode("email")}
+              type="button"
+              onClick={() => setHeirMode("email")}
               className={`px-3.5 py-1.5 rounded-md font-medium transition-colors ${heirMode === "email" ? "bg-accent text-white shadow-sm" : "text-muted hover:text-foreground"}`}
             >
               Email · no wallet
             </button>
             <button
-              type="button" onClick={() => setHeirMode("address")}
+              type="button"
+              onClick={() => setHeirMode("address")}
               className={`px-3.5 py-1.5 rounded-md font-medium transition-colors ${heirMode === "address" ? "bg-accent text-white shadow-sm" : "text-muted hover:text-foreground"}`}
             >
               Wallet address
@@ -176,41 +242,57 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
             {heirMode === "email" ? (
               <>
                 <input
-                  type="email" value={heirEmail} onChange={(e) => setHeirEmail(e.target.value)}
+                  type="email"
+                  value={heirEmail}
+                  onChange={(e) => setHeirEmail(e.target.value)}
                   placeholder="mom@email.com"
                   className={`field-input ${heirEmail.length > 0 && !emailValid ? "invalid" : ""}`}
                 />
                 <p className="mt-2 text-xs text-muted">
-                  We&apos;ll create a secure wallet for them automatically — they just sign in with this email to unlock. No crypto knowledge needed.
+                  We&apos;ll create a secure wallet for them automatically —
+                  they just sign in with this email to unlock. No crypto
+                  knowledge needed.
                 </p>
               </>
             ) : (
               <>
                 <input
-                  value={heir} onChange={(e) => setHeir(e.target.value)} placeholder="0x…"
+                  value={heir}
+                  onChange={(e) => setHeir(e.target.value)}
+                  placeholder="0x…"
                   className={`field-input font-mono text-sm ${heir.length > 0 && !heirValid ? "invalid" : ""}`}
                 />
                 {heir.length > 0 && !heirValid && (
-                  <p className="mt-2 text-xs text-warm">Enter a valid address that isn&apos;t your own.</p>
+                  <p className="mt-2 text-xs text-warm">
+                    Enter a valid address that isn&apos;t your own.
+                  </p>
                 )}
               </>
             )}
           </div>
         </div>
 
-        <Field label="Inactivity window" hint="How long without a heartbeat before your beneficiary can unlock.">
+        <Field
+          label="Inactivity window"
+          hint="How long without a heartbeat before your beneficiary can unlock."
+        >
           <select
             value={periodSeconds}
             onChange={(e) => setPeriodSeconds(Number(e.target.value))}
             className="field-input"
           >
             {PERIOD_PRESETS.map((p) => (
-              <option key={p.seconds} value={p.seconds}>{p.label}</option>
+              <option key={p.seconds} value={p.seconds}>
+                {p.label}
+              </option>
             ))}
           </select>
         </Field>
 
-        <Field label="Recovery phrase / secret" hint="Seed phrase, private key, or anything you need to pass on.">
+        <Field
+          label="Recovery phrase / secret"
+          hint="Seed phrase, private key, or anything you need to pass on."
+        >
           <textarea
             value={seed}
             onChange={(e) => setSeed(e.target.value)}
@@ -220,7 +302,10 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
           />
         </Field>
 
-        <Field label="Final message (optional)" hint="A note your beneficiary will read alongside the secret.">
+        <Field
+          label="Final message (optional)"
+          hint="A note your beneficiary will read alongside the secret."
+        >
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -231,7 +316,8 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
         </Field>
 
         <p className={`text-xs ${tooLong ? "text-warm" : "text-muted"}`}>
-          {secretBytes.length}/{MAX_SECRET_BYTES} bytes {tooLong ? "— too long, shorten the message." : ""}
+          {secretBytes.length}/{MAX_SECRET_BYTES} bytes{" "}
+          {tooLong ? "— too long, shorten the message." : ""}
         </p>
 
         <button
@@ -244,7 +330,10 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
 
         {advanced && (
           <div className="rounded-2xl bg-accent-soft/30 border border-accent/20 p-5 space-y-4">
-            <Field label="Guardian addresses" hint="People who can together confirm you're gone, to release early.">
+            <Field
+              label="Guardian addresses"
+              hint="People who can together confirm you're gone, to release early."
+            >
               <textarea
                 value={guardiansRaw}
                 onChange={(e) => setGuardiansRaw(e.target.value)}
@@ -256,15 +345,21 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
             <div className="grid grid-cols-2 gap-4">
               <Field label="Guardians required">
                 <input
-                  type="number" min={0} max={guardians.length}
+                  type="number"
+                  min={0}
+                  max={guardians.length}
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
                   className="field-input"
                 />
               </Field>
-              <Field label="Challenge window (min)" hint="Grace period to cancel a false trigger.">
+              <Field
+                label="Challenge window (min)"
+                hint="Grace period to cancel a false trigger."
+              >
                 <input
-                  type="number" min={0}
+                  type="number"
+                  min={0}
                   value={challengeMin}
                   onChange={(e) => setChallengeMin(Number(e.target.value))}
                   className="field-input"
@@ -285,14 +380,25 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
           disabled={!canSubmit}
           className="group w-full rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-6 py-3.5 shadow-md hover:shadow-lg disabled:opacity-40 disabled:shadow-none transition-all focus:outline-none focus:ring-2 focus:ring-accent/40"
         >
-          {step === "provisioning" ? "Setting up your beneficiary…" :
-           step === "configuring" ? "Confirm setup in wallet…" :
-           step === "allocating" ? "Encrypting & sealing vault…" :
-           <span className="inline-flex items-center gap-2">Seal my vault <span className="transition-transform inline-block group-hover:translate-x-0.5">→</span></span>}
+          {step === "provisioning" ? (
+            "Setting up your beneficiary…"
+          ) : step === "configuring" ? (
+            "Confirm setup in wallet…"
+          ) : step === "allocating" ? (
+            "Encrypting & sealing vault…"
+          ) : (
+            <span className="inline-flex items-center gap-2">
+              Seal my vault{" "}
+              <span className="transition-transform inline-block group-hover:translate-x-0.5">
+                →
+              </span>
+            </span>
+          )}
         </button>
         {busy && (
           <p className="text-xs text-muted text-center">
-            This takes a few wallet confirmations: configure → allocate → write. Approve each prompt.
+            This takes a few wallet confirmations: configure → allocate → write.
+            Approve each prompt.
           </p>
         )}
         {!canSubmit && !busy && disabledReason && (
@@ -304,7 +410,15 @@ export function SetupForm({ onComplete }: { onComplete: (uuid: number) => void }
 }
 
 /* ─────────  shared bits  ───────── */
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
       <FieldLabel>{label}</FieldLabel>
@@ -315,7 +429,9 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <span className="text-sm font-medium text-foreground">{children}</span>;
+  return (
+    <span className="text-sm font-medium text-foreground">{children}</span>
+  );
 }
 
 function FieldHint({ children }: { children: React.ReactNode }) {

@@ -32,14 +32,15 @@ Heir ──sign in (email)──▶ accessCDR ──────────▶ 
 
 ### The `DeadManSwitch` condition contract (Track 1)
 
-A single custom CDR condition contract gates both writing and reading a vault, implementing **proof-of-life gated decryption** — a permission pattern that, as far as we know, hadn't been demoed on CDR:
+A single custom CDR condition contract gates both writing and reading every vault, implementing **proof-of-life gated decryption** — a permission pattern that, as far as we know, hadn't been demoed on CDR:
 
-- **Time-based release** — heir can decrypt only after `block.timestamp - lastPing ≥ period`.
-- **Heartbeat** — `heartbeat()` resets the clock; the owner stays in control.
-- **Guardian multi-sig** — an optional M-of-N quorum can attest inactivity to release early, behind a **challenge window** the owner can cancel.
-- **Composable** — any contract can read `isClaimable(owner)` / `secondsUntilClaimable(owner)`.
+- **Per-vault binding** — each vault's `conditionData` is `abi.encode(owner, heir, period)`, so one owner can seal many vaults to different heirs with different windows; re-sealing never affects existing vaults.
+- **Time-based release** — the heir can decrypt only after `block.timestamp ≥ lastPing + period`.
+- **One heartbeat for everything** — `heartbeat()` resets the single proof-of-life clock and re-seals every vault at once; the owner stays in control.
+- **Guardian multi-sig** — an optional M-of-N quorum can attest inactivity to release early, behind a **challenge window** the owner can cancel. Guardians can be added *or removed* by reconfiguring.
+- **Composable** — any contract can read `isClaimable(owner, period)` / `secondsUntilClaimable(owner, period)` / `getClock(owner)`.
 
-CDR invokes conditions as `check{Read,Write}Condition(uint32 uuid, bytes, bytes, address caller)`; the contract reads the owner from the condition data and enforces `caller == heir && claimable` on reads and `caller == owner` on writes. See [`contracts/DeadManSwitch.sol`](contracts/DeadManSwitch.sol).
+**On the CDR interface:** the live Aeneid CDR core invokes conditions as `check{Read,Write}Condition(uint32 uuid, bytes conditionData, bytes accessAuxData, address caller)` — selectors `0x8db3eb17` / `0x5645dbbf`, matching the deployed `LicenseReadCondition` / `OwnerWriteCondition`. Story's published docs currently show a 3-arg `(address,bytes,bytes)` shape; that is **stale** relative to what's deployed, so we reverse-engineered and matched the on-chain interface (see `scripts/find-sig*.mts`). The gate decodes the vault tuple from `conditionData`, enforces `caller == heir && claimable` on reads and `caller == owner` on writes, and **rejects any read that supplies a non-empty `accessAuxData`** — closing an argument-confusion vector. See [`contracts/DeadManSwitch.sol`](contracts/DeadManSwitch.sol) and the tests in [`test/DeadManSwitch.t.sol`](test/DeadManSwitch.t.sol).
 
 ### Security model
 
@@ -49,6 +50,8 @@ Access is enforced cryptographically, in three layers — not by hoping no one f
 3. **Threshold TEEs** — the secret is split across the validator network and only reassembled when the on-chain condition passes, so there is nothing to brute-force.
 
 Only **metadata** (that a vault exists, the heir address, the timer) is public; the contents never are.
+
+> **Testnet note:** by design the plaintext never leaves your device, but CDR's confidentiality on the **Aeneid testnet is not production-hardened** (Story's own docs say as much). Don't seal a real, funded seed phrase here — use a throwaway secret for the demo.
 
 ## Tech stack
 
@@ -75,7 +78,13 @@ Environment variables (`.env`):
 | `RELAYER_PRIVATE_KEY` | Testnet key that gas-funds new embedded wallets |
 | `CDR_API_URL` | CDR Story-API REST base (proxied) |
 
-Helper scripts (testnet): `npm run smoke` (CDR round-trip), `npx tsx scripts/dms-flow.mts` (full heir-claim flow), `npx tsx scripts/deploy.mts contracts/DeadManSwitch.sol DeadManSwitch` (compile + deploy a contract).
+**Contract tests** (no testnet needed): install [Foundry](https://book.getfoundry.sh/) and run `forge test` — covers time release, heartbeat reset, guardian quorum + challenge window, guardian removal, per-vault independence, and the read/write/`accessAuxData` access checks.
+
+Helper scripts (testnet): `npm run smoke` (CDR round-trip), `npx tsx scripts/dms-flow.mts` (full heir-claim flow), `npx tsx scripts/deploy.mts contracts/DeadManSwitch.sol DeadManSwitch` (compile + deploy the contract).
+
+> **Redeploying the contract:** `DeadManSwitch.sol` is deployed to Aeneid (address in [`deployments.json`](deployments.json) and `src/lib/contract.ts`). If you change the contract, redeploy with the script above (needs `PRIVATE_KEY` + testnet IP) and update the address in **both** files.
+
+> **`demoExpire()` is demo-only:** it lets an owner fast-forward *their own* clock so a live demo doesn't wait out the window. It's self-only and harmless, but remove it before any production deployment.
 
 ## Demo flow
 

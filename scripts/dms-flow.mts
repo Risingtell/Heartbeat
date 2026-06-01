@@ -23,18 +23,19 @@ const aeneid = defineChain({
 const dmsAbi = [
   { type: "function", name: "configure", stateMutability: "nonpayable",
     inputs: [
-      { name: "heir", type: "address" }, { name: "period", type: "uint64" },
       { name: "guardians", type: "address[]" }, { name: "guardianThreshold", type: "uint32" },
       { name: "challengeWindow", type: "uint64" },
     ], outputs: [] },
   { type: "function", name: "heartbeat", stateMutability: "nonpayable", inputs: [], outputs: [] },
   { type: "function", name: "demoExpire", stateMutability: "nonpayable", inputs: [], outputs: [] },
   { type: "function", name: "isClaimable", stateMutability: "view",
-    inputs: [{ name: "owner", type: "address" }], outputs: [{ type: "bool" }] },
+    inputs: [{ name: "owner", type: "address" }, { name: "period", type: "uint64" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "checkReadCondition", stateMutability: "view",
     inputs: [{ name: "uuid", type: "uint32" }, { name: "conditionData", type: "bytes" }, { name: "accessAuxData", type: "bytes" }, { name: "caller", type: "address" }],
     outputs: [{ type: "bool" }] },
 ] as const;
+
+const PERIOD = 120n; // per-vault inactivity window for this test
 
 const ok = (b: boolean, msg: string) => console.log(`${b ? "[OK]  " : "[FAIL]"} ${msg}`);
 
@@ -57,17 +58,21 @@ async function main() {
   await publicClient.waitForTransactionReceipt({ hash: fundTx });
   console.log("   heir balance:", formatEther(await publicClient.getBalance({ address: heir.address })), "IP");
 
-  // 2. Owner configures the switch: heir + a SHORT 120s period (no guardians for this test).
-  console.log("\n2) owner.configure(heir, 120s)...");
+  // 2. Owner configures the proof-of-life clock (no guardians for this test).
+  console.log("\n2) owner.configure(no guardians)...");
   const cfgTx = await ownerWallet.writeContract({
     address: DMS, abi: dmsAbi, functionName: "configure",
-    args: [heir.address, 120n, [], 0, 0n], account: owner, chain: aeneid,
+    args: [[], 0, 0n], account: owner, chain: aeneid,
   });
   await publicClient.waitForTransactionReceipt({ hash: cfgTx });
 
   // 3. Owner allocates a vault gated by DeadManSwitch (both write & read), writes a secret.
+  //    conditionData binds (owner, heir, period) to this specific vault.
   console.log("\n3) owner allocates vault + writes secret...");
-  const conditionData = encodeAbiParameters([{ type: "address" }], [owner.address]);
+  const conditionData = encodeAbiParameters(
+    [{ type: "address" }, { type: "address" }, { type: "uint64" }],
+    [owner.address, heir.address, PERIOD],
+  );
   const { uuid } = await ownerClient.uploader.allocate({
     updatable: false,
     writeConditionAddr: DMS, readConditionAddr: DMS, // self-contained: DMS gates both write and read
@@ -80,17 +85,21 @@ async function main() {
   console.log("   vault uuid:", uuid, "| secret:", Buffer.from(dataKey).toString("hex"));
 
   // 4. BEFORE expiry: heir must be blocked.
-  const claimableBefore = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "isClaimable", args: [owner.address] });
+  const claimableBefore = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "isClaimable", args: [owner.address, PERIOD] });
   const readGateBefore = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "checkReadCondition", args: [0, conditionData, "0x", heir.address] });
   ok(claimableBefore === false, `before expiry: isClaimable == ${claimableBefore} (want false)`);
   ok(readGateBefore === false, `before expiry: checkReadCondition(heir) == ${readGateBefore} (want false)`);
+
+  // 4b. An attacker supplying a non-empty accessAuxData must be rejected (arg-confusion guard).
+  const injected = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "checkReadCondition", args: [0, conditionData, conditionData, heir.address] });
+  ok(injected === false, `accessAuxData injection rejected: checkReadCondition == ${injected} (want false)`);
 
   // 5. Owner triggers demo expiry (simulates going inactive).
   console.log("\n5) owner.demoExpire() (simulate inactivity)...");
   const expTx = await ownerWallet.writeContract({ address: DMS, abi: dmsAbi, functionName: "demoExpire", args: [], account: owner, chain: aeneid });
   await publicClient.waitForTransactionReceipt({ hash: expTx });
 
-  const claimableAfter = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "isClaimable", args: [owner.address] });
+  const claimableAfter = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "isClaimable", args: [owner.address, PERIOD] });
   const readGateAfter = await publicClient.readContract({ address: DMS, abi: dmsAbi, functionName: "checkReadCondition", args: [0, conditionData, "0x", heir.address] });
   ok(claimableAfter === true, `after expiry: isClaimable == ${claimableAfter} (want true)`);
   ok(readGateAfter === true, `after expiry: checkReadCondition(heir) == ${readGateAfter} (want true)`);
