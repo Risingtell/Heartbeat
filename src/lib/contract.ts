@@ -1,6 +1,6 @@
 // DeadManSwitch deployed on Story Aeneid (keep in sync with deployments.json)
 export const DEAD_MAN_SWITCH =
-  "0xc05747dcbddc6a69be52a4c4dba1a222632a32ee" as const;
+  "0x288fc0953f2fb44230449ddc34ef6d3c539b6843" as const;
 
 export const deadManSwitchAbi = [
   {
