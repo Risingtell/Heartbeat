@@ -20,7 +20,7 @@ function ActiveWalletSync() {
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange={false}>
       <PrivyProvider
         appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? ""}
         config={{
