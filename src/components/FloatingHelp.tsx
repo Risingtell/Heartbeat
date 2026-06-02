@@ -46,26 +46,53 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
 
 type Msg = { role: "q" | "a"; text: string };
 
+const BTN = 56;
+const PANEL_W = 340;
+const MARGIN = 12;
+const GAP = 10;
+
+function clampX(x: number, w: number) {
+  return Math.max(MARGIN, Math.min(w - BTN - MARGIN, x));
+}
+function clampY(y: number, h: number) {
+  return Math.max(MARGIN, Math.min(h - BTN - MARGIN, y));
+}
+
 export function FloatingHelp() {
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [viewport, setViewport] = useState({ w: 0, h: 0 });
   const [messages, setMessages] = useState<Msg[]>([]);
   const drag = useRef({ startX: 0, startY: 0, posX: 0, posY: 0, dragging: false, dist: 0 });
 
   useEffect(() => {
     setMounted(true);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    setViewport({ w, h });
+
+    let initial = { x: w - BTN - 24, y: h - BTN - 24 };
     try {
       const saved = localStorage.getItem("heartbeat:help-pos");
       if (saved) {
         const p = JSON.parse(saved);
         if (typeof p?.x === "number" && typeof p?.y === "number") {
-          setPosition(p);
-          return;
+          initial = p;
         }
       }
     } catch {}
-    setPosition({ x: window.innerWidth - 88, y: window.innerHeight - 88 });
+    // Always clamp on load, in case the saved position is now off-screen.
+    setPosition({ x: clampX(initial.x, w), y: clampY(initial.y, h) });
+
+    function onResize() {
+      const nw = window.innerWidth;
+      const nh = window.innerHeight;
+      setViewport({ w: nw, h: nh });
+      setPosition((p) => ({ x: clampX(p.x, nw), y: clampY(p.y, nh) }));
+    }
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -91,9 +118,10 @@ export function FloatingHelp() {
     const dx = e.clientX - drag.current.startX;
     const dy = e.clientY - drag.current.startY;
     drag.current.dist = Math.hypot(dx, dy);
-    const nextX = Math.max(8, Math.min(window.innerWidth - 64, drag.current.posX + dx));
-    const nextY = Math.max(8, Math.min(window.innerHeight - 64, drag.current.posY + dy));
-    setPosition({ x: nextX, y: nextY });
+    setPosition({
+      x: clampX(drag.current.posX + dx, viewport.w),
+      y: clampY(drag.current.posY + dy, viewport.h),
+    });
   }
   function onPointerUp(e: React.PointerEvent<HTMLButtonElement>) {
     e.currentTarget.releasePointerCapture(e.pointerId);
@@ -111,77 +139,94 @@ export function FloatingHelp() {
 
   if (!mounted) return null;
 
-  const panelAbove = position.y > 420;
+  // Position the panel independently of the button, so opening it doesn't
+  // shift the button around. Right edge of the panel aligns with the right
+  // edge of the button by default; clamp inside the viewport.
+  const desiredLeft = position.x + BTN - PANEL_W;
+  const panelLeft = Math.max(MARGIN, Math.min(viewport.w - PANEL_W - MARGIN, desiredLeft));
+  const spaceAbove = position.y - MARGIN;
+  const spaceBelow = viewport.h - (position.y + BTN) - MARGIN;
+  const above = spaceAbove > 380 || spaceAbove > spaceBelow;
+  const panelMaxH = Math.max(260, Math.min(560, above ? spaceAbove - GAP : spaceBelow - GAP));
+  const panelTop = above ? position.y - panelMaxH - GAP : position.y + BTN + GAP;
 
   return (
-    <div className="fixed z-50 select-none" style={{ left: position.x, top: position.y }}>
-      <div className={`flex ${panelAbove ? "flex-col-reverse" : "flex-col"} items-end gap-2`}>
-        <button
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          aria-label={open ? "Close help" : "Ask a question about Heartbeat"}
-          className="touch-none rounded-full h-14 w-14 bg-accent hover:bg-accent-deep text-white shadow-xl flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors"
+    <>
+      {open && (
+        <div
+          className="fixed z-50 rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col animate-fade-up"
+          style={{
+            left: panelLeft,
+            top: panelTop,
+            width: PANEL_W,
+            maxWidth: `calc(100vw - ${MARGIN * 2}px)`,
+            maxHeight: panelMaxH,
+          }}
         >
-          <span className="text-2xl leading-none">{open ? "×" : "?"}</span>
-        </button>
-
-        {open && (
-          <div className="w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col animate-fade-up">
-            <div className="px-4 py-3 border-b border-border-soft">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-accent-deep font-medium">Help</p>
-              <p className="font-semibold text-sm mt-0.5 text-foreground">
-                Ask about <span className="font-display italic font-normal text-accent-deep">Heartbeat</span>
-              </p>
-            </div>
-
-            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 text-sm bg-background">
-              {messages.length === 0 ? (
-                <p className="text-muted text-xs leading-relaxed">
-                  Tap a question below to start. You can drag the help button anywhere on the screen.
-                </p>
-              ) : (
-                messages.map((m, i) => (
-                  <div key={i} className={m.role === "q" ? "flex justify-end" : "flex justify-start"}>
-                    <div
-                      className={`max-w-[88%] rounded-2xl px-3 py-2 leading-relaxed ${
-                        m.role === "q"
-                          ? "bg-accent text-white"
-                          : "bg-surface text-foreground border border-border-soft"
-                      }`}
-                    >
-                      {m.text}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="px-2.5 py-2 border-t border-border-soft bg-surface max-h-52 overflow-y-auto">
-              <p className="text-[10px] uppercase tracking-wider text-muted px-2 py-1">Suggested questions</p>
-              <div className="space-y-0.5">
-                {FAQ_ITEMS.map((item) => (
-                  <button
-                    key={item.q}
-                    onClick={() => ask(item.q)}
-                    className="block w-full text-left text-xs rounded-lg px-2.5 py-1.5 text-foreground-soft hover:text-foreground hover:bg-surface-2 transition-colors leading-snug"
-                  >
-                    {item.q}
-                  </button>
-                ))}
-              </div>
-              {messages.length > 0 && (
-                <button
-                  onClick={() => setMessages([])}
-                  className="block w-full text-center text-xs text-muted hover:text-foreground mt-2 py-1 transition-colors"
-                >
-                  Clear conversation
-                </button>
-              )}
-            </div>
+          <div className="px-4 py-3 border-b border-border-soft shrink-0">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-accent-deep font-medium">Help</p>
+            <p className="font-semibold text-sm mt-0.5 text-foreground">
+              Ask about <span className="font-display italic font-normal text-accent-deep">Heartbeat</span>
+            </p>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3 text-sm bg-background">
+            {messages.length === 0 ? (
+              <p className="text-muted text-xs leading-relaxed">
+                Tap a question below to start. You can drag the help button anywhere on the screen.
+              </p>
+            ) : (
+              messages.map((m, i) => (
+                <div key={i} className={m.role === "q" ? "flex justify-end" : "flex justify-start"}>
+                  <div
+                    className={`max-w-[88%] rounded-2xl px-3 py-2 leading-relaxed ${
+                      m.role === "q"
+                        ? "bg-accent text-white"
+                        : "bg-surface text-foreground border border-border-soft"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="px-2.5 py-2 border-t border-border-soft bg-surface max-h-44 overflow-y-auto shrink-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted px-2 py-1">Suggested questions</p>
+            <div className="space-y-0.5">
+              {FAQ_ITEMS.map((item) => (
+                <button
+                  key={item.q}
+                  onClick={() => ask(item.q)}
+                  className="block w-full text-left text-xs rounded-lg px-2.5 py-1.5 text-foreground-soft hover:text-foreground hover:bg-surface-2 transition-colors leading-snug"
+                >
+                  {item.q}
+                </button>
+              ))}
+            </div>
+            {messages.length > 0 && (
+              <button
+                onClick={() => setMessages([])}
+                className="block w-full text-center text-xs text-muted hover:text-foreground mt-2 py-1 transition-colors"
+              >
+                Clear conversation
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <button
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        aria-label={open ? "Close help" : "Ask a question about Heartbeat"}
+        className="fixed z-50 touch-none rounded-full h-14 w-14 bg-accent hover:bg-accent-deep text-white shadow-xl flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors select-none"
+        style={{ left: position.x, top: position.y }}
+      >
+        <span className="text-2xl leading-none">{open ? "×" : "?"}</span>
+      </button>
+    </>
   );
 }
