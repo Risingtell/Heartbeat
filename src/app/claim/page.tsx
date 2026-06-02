@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReadContract } from "wagmi";
 import { usePrivy } from "@privy-io/react-auth";
 import { LoginButton } from "@/components/LoginButton";
@@ -35,6 +35,7 @@ export default function ClaimPage() {
   const [attestError, setAttestError] = useState("");
   const [inheritances, setInheritances] = useState<Inheritance[]>([]);
   const [loadingInheritances, setLoadingInheritances] = useState(false);
+  const secretRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -85,6 +86,16 @@ export default function ClaimPage() {
     const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // When the secret first appears, scroll it into view and focus the reveal
+  // card so a beneficiary doesn't miss it below the fold.
+  useEffect(() => {
+    if (!secret || !secretRef.current) return;
+    const el = secretRef.current;
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, [secret]);
 
   const ownerValid = isAddress(owner);
 
@@ -462,7 +473,10 @@ export default function ClaimPage() {
 
           {/* Revealed secret */}
           {secret && (
-            <div className="relative rounded-3xl border border-accent/40 bg-surface overflow-hidden animate-fade-up">
+            <div
+              ref={secretRef}
+              className="relative rounded-3xl border border-accent/40 bg-surface overflow-hidden animate-fade-up scroll-mt-20"
+            >
               <div className="hero-glow absolute inset-0 -z-10" />
               <div className="px-6 sm:px-10 py-10">
                 <div className="flex items-center gap-3">
