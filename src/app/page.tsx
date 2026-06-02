@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { FadeUp } from "@/components/FadeUp";
+import { FlowDiagram } from "@/components/FlowDiagram";
 import {
+  BrandMark,
   HeartIcon,
   PulseIcon,
   MailIcon,
@@ -24,20 +26,25 @@ export default function Home() {
             <div className="relative inline-flex items-center justify-center mb-7">
               <HaloRing className="absolute text-accent" size={220} />
               <span className="heart-halo text-accent animate-heartbeat">
-                <HeartIcon size={64} />
+                <BrandMark size={64} />
               </span>
             </div>
             <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-medium text-accent-deep">
-              <span className="h-1 w-1 rounded-full bg-accent" /> Powered by Story · Confidential Data Rails
+              <span className="h-1 w-1 rounded-full bg-accent" /> Powered by
+              Story · Confidential Data Rails
             </p>
             <h1 className="mt-5 text-5xl sm:text-7xl leading-[1.02] tracking-tight font-semibold">
-              Your keys shouldn&apos;t<br />
-              <span className="font-display italic text-accent-deep font-normal">die with you.</span>
+              Your keys shouldn&apos;t
+              <br />
+              <span className="font-display italic text-accent-deep font-normal">
+                die with you.
+              </span>
             </h1>
             <p className="mt-7 mx-auto max-w-2xl text-lg sm:text-xl text-foreground-soft leading-relaxed">
-              Encrypt your seed phrase and final wishes into a proof-of-life vault on-chain. Check in now and
-              then. If you ever go silent, the people you choose can recover them, and no one, not even us,
-              ever sees the secret.
+              Encrypt your seed phrase and final wishes into a proof-of-life
+              vault on-chain. Check in now and then. If you ever go silent, the
+              people you choose can recover them, and no one, not even us, ever
+              sees the secret.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
               <Link
@@ -45,7 +52,9 @@ export default function Home() {
                 className="group rounded-xl bg-accent hover:bg-accent-deep text-white font-medium px-7 py-3.5 shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-accent/40"
               >
                 Seal your first vault
-                <span className="ml-1 transition-transform inline-block group-hover:translate-x-0.5">→</span>
+                <span className="ml-1 transition-transform inline-block group-hover:translate-x-0.5">
+                  →
+                </span>
               </Link>
               <Link
                 href="/claim"
@@ -71,6 +80,42 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ─────────────────────────────  Stat band  ───────────────────────────── */}
+        <FadeUp as="section" className="border-y border-border bg-surface-2">
+          <div className="mx-auto max-w-5xl px-5 py-14 grid sm:grid-cols-3 gap-10 sm:gap-6 text-center">
+            <div>
+              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+                ~20%
+              </div>
+              <p className="mt-3 text-sm text-muted leading-relaxed">
+                of all bitcoin is already lost forever — most of it keys that
+                died with their owner.
+                <span className="block mt-1 text-[11px] text-muted-soft">
+                  Widely cited industry estimate
+                </span>
+              </p>
+            </div>
+            <div>
+              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+                0
+              </div>
+              <p className="mt-3 text-sm text-muted leading-relaxed">
+                people who can ever see your secret while you&apos;re checking
+                in — not even us.
+              </p>
+            </div>
+            <div>
+              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+                1 email
+              </div>
+              <p className="mt-3 text-sm text-muted leading-relaxed">
+                is all your heir needs to recover it — no wallet, no seed
+                phrase, no lawyer.
+              </p>
+            </div>
+          </div>
+        </FadeUp>
+
         {/* ──────────────────────  Dashboard preview  ────────────────────── */}
         <FadeUp as="section" className="relative pb-24">
           <div className="dot-grid absolute inset-0 -z-10 opacity-60" />
@@ -91,10 +136,15 @@ export default function Home() {
                   <span className="heart-halo inline-flex text-accent animate-heartbeat">
                     <HeartIcon size={44} />
                   </span>
-                  <h3 className="mt-4 text-3xl font-semibold tracking-tight">Active &amp; sealed</h3>
+                  <h3 className="mt-4 text-3xl font-semibold tracking-tight">
+                    Active &amp; sealed
+                  </h3>
                   <p className="mt-2 text-foreground-soft">
                     Your beneficiary can unlock in{" "}
-                    <span className="font-semibold text-foreground">29d 14h 02m</span> if you stop checking in.
+                    <span className="font-semibold text-foreground">
+                      29d 14h 02m
+                    </span>{" "}
+                    if you stop checking in.
                   </p>
                   <div className="mt-7 inline-flex items-center gap-2 rounded-xl bg-accent text-white font-medium px-8 py-3.5 shadow-md">
                     <HeartIcon size={16} /> I&apos;m still here
@@ -107,8 +157,13 @@ export default function Home() {
                     ["Last heartbeat", "2h 14m ago"],
                     ["Guardians", "2 of 3"],
                   ].map(([k, v]) => (
-                    <div key={k} className="rounded-xl bg-surface-2 border border-border-soft px-3.5 py-3">
-                      <dt className="text-[11px] uppercase tracking-wider text-muted">{k}</dt>
+                    <div
+                      key={k}
+                      className="rounded-xl bg-surface-2 border border-border-soft px-3.5 py-3"
+                    >
+                      <dt className="text-[11px] uppercase tracking-wider text-muted">
+                        {k}
+                      </dt>
                       <dd className="mt-1 font-medium text-foreground">{v}</dd>
                     </div>
                   ))}
@@ -118,7 +173,8 @@ export default function Home() {
             {/* Floating badges */}
             <div className="hidden md:flex justify-between -mt-4 px-8">
               <div className="rounded-full border border-border bg-surface shadow-md px-3 py-1.5 text-xs flex items-center gap-2 animate-float">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" /> Encrypted client-side
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-heartbeat" />{" "}
+                Encrypted client-side
               </div>
               <div
                 className="rounded-full border border-border bg-surface shadow-md px-3 py-1.5 text-xs flex items-center gap-2 animate-float"
@@ -134,13 +190,23 @@ export default function Home() {
         <section className="border-y border-border bg-surface">
           <div className="mx-auto max-w-6xl px-5 py-24">
             <FadeUp className="text-center max-w-2xl mx-auto">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">How it works</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">
+                How it works
+              </p>
               <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
                 Three steps.{" "}
-                <span className="font-display italic font-normal text-accent-deep">No trust required.</span>
+                <span className="font-display italic font-normal text-accent-deep">
+                  No trust required.
+                </span>
               </h2>
             </FadeUp>
-            <div className="mt-16 grid gap-8 sm:grid-cols-3">
+
+            {/* Visual CDR flow: how the secret travels from you to your heir */}
+            <FadeUp className="mt-14 rounded-3xl border border-border-soft bg-background px-5 sm:px-10 py-10">
+              <FlowDiagram />
+            </FadeUp>
+
+            <div className="mt-10 grid gap-8 sm:grid-cols-3">
               {[
                 {
                   n: "01",
@@ -163,7 +229,9 @@ export default function Home() {
                   delay={i * 120}
                   className="group rounded-2xl border border-border-soft bg-background hover:bg-surface hover:border-accent-glow hover:-translate-y-1 hover:shadow-lg transition-all p-7"
                 >
-                  <div className="font-display text-3xl text-accent-deep italic">{s.n}</div>
+                  <div className="font-display text-3xl text-accent-deep italic">
+                    {s.n}
+                  </div>
                   <h3 className="mt-3 text-xl font-semibold">{s.t}</h3>
                   <p className="mt-2 text-muted leading-relaxed">{s.d}</p>
                 </FadeUp>
@@ -179,8 +247,11 @@ export default function Home() {
               What makes it different
             </p>
             <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
-              Built like <span className="font-display italic font-normal text-accent-deep">infrastructure</span>,
-              designed for humans.
+              Built like{" "}
+              <span className="font-display italic font-normal text-accent-deep">
+                infrastructure
+              </span>
+              , designed for humans.
             </h2>
           </FadeUp>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -239,20 +310,31 @@ export default function Home() {
                 The security model
               </p>
               <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
-                Trust math,<br />
-                <span className="font-display italic font-normal text-accent-deep">not people.</span>
+                Trust math,
+                <br />
+                <span className="font-display italic font-normal text-accent-deep">
+                  not people.
+                </span>
               </h2>
               <p className="mt-6 text-foreground-soft leading-relaxed text-lg">
-                Heartbeat is built on Confidential Data Rails. Your secret is split across a decentralized
-                network of secure enclaves and only reassembled when your on-chain conditions are met. No
-                company holds your keys. No database to breach. No one to bribe, including us.
+                Heartbeat is built on Confidential Data Rails. Your secret is
+                split across a decentralized network of secure enclaves and only
+                reassembled when your on-chain conditions are met. No company
+                holds your keys. No database to breach. No one to bribe,
+                including us.
               </p>
             </FadeUp>
             <div className="mt-10 grid sm:grid-cols-3 gap-3 text-sm">
               {[
-                ["Client-side encryption", "Plaintext never leaves your device."],
+                [
+                  "Client-side encryption",
+                  "Plaintext never leaves your device.",
+                ],
                 ["On-chain conditions", "A custom contract gates every read."],
-                ["Threshold TEEs", "Keys reassemble only when conditions pass."],
+                [
+                  "Threshold TEEs",
+                  "Keys reassemble only when conditions pass.",
+                ],
               ].map(([t, d], i) => (
                 <FadeUp
                   key={t}
@@ -268,20 +350,26 @@ export default function Home() {
         </section>
 
         {/* ─────────────────────  Final CTA  ────────────────────── */}
-        <FadeUp as="section" className="mx-auto max-w-3xl px-5 py-28 text-center">
+        <FadeUp
+          as="section"
+          className="mx-auto max-w-3xl px-5 py-28 text-center"
+        >
           <div className="relative inline-flex items-center justify-center mb-7">
             <HaloRing className="absolute text-accent" size={180} />
             <span className="heart-halo text-accent animate-heartbeat">
-              <HeartIcon size={56} />
+              <BrandMark size={56} />
             </span>
           </div>
           <h2 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
-            Seal one in<br />
-            <span className="font-display italic font-normal text-accent-deep">under a minute.</span>
+            Seal one in
+            <br />
+            <span className="font-display italic font-normal text-accent-deep">
+              under a minute.
+            </span>
           </h2>
           <p className="mt-5 text-foreground-soft max-w-xl mx-auto">
-            Your seed phrase deserves better than a sticky note. Heartbeat takes a few clicks and lasts longer
-            than you do.
+            Your seed phrase deserves better than a sticky note. Heartbeat takes
+            a few clicks and lasts longer than you do.
           </p>
           <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -303,7 +391,8 @@ export default function Home() {
       <footer className="border-t border-border bg-surface">
         <div className="mx-auto max-w-6xl px-5 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted">
           <p className="flex items-center gap-2">
-            <HeartIcon className="text-accent" size={14} /> Heartbeat · built for the Story CDR Hackathon
+            <BrandMark className="text-accent" size={14} /> Heartbeat · built
+            for the Story CDR Hackathon
           </p>
           <p className="flex items-center gap-5">
             <a
