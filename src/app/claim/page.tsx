@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 import { LoginButton } from "@/components/LoginButton";
 import { isAddress, type Address } from "viem";
 import { useActiveWallet } from "@/lib/useActiveWallet";
@@ -10,8 +11,17 @@ import { DEAD_MAN_SWITCH, deadManSwitchAbi } from "@/lib/contract";
 import { readVault } from "@/lib/cdr";
 import { humanDuration, shortAddr } from "@/lib/format";
 
+type Inheritance = {
+  vaultUuid: number;
+  ownerAddress: string;
+  heirAddress: string;
+  period: number;
+  sealedAt: number;
+};
+
 export default function ClaimPage() {
   const { address, walletClient } = useActiveWallet();
+  const { authenticated, getAccessToken } = usePrivy();
 
   const [owner, setOwner] = useState("");
   const [uuid, setUuid] = useState("");
@@ -23,6 +33,8 @@ export default function ClaimPage() {
   const [error, setError] = useState("");
   const [attesting, setAttesting] = useState(false);
   const [attestError, setAttestError] = useState("");
+  const [inheritances, setInheritances] = useState<Inheritance[]>([]);
+  const [loadingInheritances, setLoadingInheritances] = useState(false);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -31,6 +43,44 @@ export default function ClaimPage() {
     if (p.get("heir")) setHeir(p.get("heir")!);
     if (p.get("period")) setPeriod(Number(p.get("period")) || 0);
   }, []);
+
+  // Fetch the signed-in user's inheritance list once authenticated, if they
+  // haven't already loaded a vault from a claim link.
+  useEffect(() => {
+    if (!authenticated) return;
+    if (owner && uuid) return; // a link is already loading a specific vault
+    let cancelled = false;
+    (async () => {
+      setLoadingInheritances(true);
+      try {
+        const token = await getAccessToken();
+        if (!token) return;
+        const res = await fetch("/api/my-inheritances", {
+          method: "POST",
+          headers: { authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const list = Array.isArray(data?.inheritances) ? (data.inheritances as Inheritance[]) : [];
+        setInheritances(list);
+      } catch {
+        /* ignore */
+      } finally {
+        if (!cancelled) setLoadingInheritances(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authenticated, owner, uuid, getAccessToken]);
+
+  function openInheritance(it: Inheritance) {
+    setOwner(it.ownerAddress);
+    setUuid(String(it.vaultUuid));
+    setHeir(it.heirAddress);
+    setPeriod(it.period);
+    setSecret(null);
+    setError("");
+  }
   useEffect(() => {
     const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
     return () => clearInterval(t);
@@ -164,10 +214,53 @@ export default function ClaimPage() {
               </span>
             </h1>
             <p className="mt-2 text-foreground-soft max-w-md mx-auto text-sm">
-              Open your benefactor&apos;s claim link — or enter the details
-              below — sign in with the email they registered, and unlock.
+              Sign in with the email your benefactor registered, and any vaults sealed for you will appear here. Or open a claim link, or enter the details by hand.
             </p>
           </div>
+
+          {/* Inheritance inbox — visible once signed in */}
+          {authenticated && !(owner && uuid) && (
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-accent-deep font-medium">
+                    Sealed for you
+                  </p>
+                  <p className="mt-1 font-semibold">Your inheritances</p>
+                </div>
+                {loadingInheritances && (
+                  <span className="text-xs text-muted">loading…</span>
+                )}
+              </div>
+              {!loadingInheritances && inheritances.length === 0 && (
+                <p className="mt-3 text-sm text-muted">
+                  No vaults registered to this account yet. If someone sealed one for you with a different email, ask them for the claim link or enter the details below.
+                </p>
+              )}
+              {inheritances.length > 0 && (
+                <ul className="mt-4 divide-y divide-border-soft">
+                  {inheritances.map((it) => (
+                    <li key={`${it.ownerAddress}-${it.vaultUuid}`} className="py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">
+                          Vault #{it.vaultUuid} from {shortAddr(it.ownerAddress)}
+                        </p>
+                        <p className="text-xs text-muted mt-0.5">
+                          {humanDuration(it.period)} inactivity window · sealed {new Date(it.sealedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => openInheritance(it)}
+                        className="shrink-0 text-sm rounded-lg bg-accent text-white px-3.5 py-1.5 hover:bg-accent-deep transition-colors"
+                      >
+                        Open
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           {/* Step 1 — Sign in */}
           {!address && (

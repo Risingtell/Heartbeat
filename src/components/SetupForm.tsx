@@ -132,6 +132,23 @@ export function SetupForm({
         createdAt: Date.now(),
       });
 
+      // For email beneficiaries, register the inheritance on their Privy user
+      // so they can discover it after signing in, without needing the claim link.
+      // Best-effort: don't fail the seal if this call fails.
+      if (heirMode === "email") {
+        fetch("/api/register-inheritance", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            heirEmail: heirEmail.trim(),
+            vaultUuid: uuid,
+            ownerAddress: address,
+            heirAddress,
+            period: periodSeconds,
+          }),
+        }).catch(() => { /* swallow */ });
+      }
+
       setSealedHeir(heirAddress);
       setCreatedUuid(uuid);
       setStep("done");
