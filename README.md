@@ -61,6 +61,8 @@ Only **metadata** (that a vault exists, the heir address, the timer) is public; 
 - **Privy** embedded wallets (email / passkey / Google) for beneficiary onboarding
 - A same-origin proxy (`/api/cdr/*`) bridges CDR's HTTP REST endpoint so the app works over HTTPS
 
+Built on the canonical [`01-encrypt-text.ts`](https://github.com/jacob-tucker/cdr-skill/blob/main/src/01-encrypt-text.ts) pattern from `jacob-tucker/cdr-skill` (`OwnerWriteCondition` for write, threshold encryption via the CDR SDK), extended with a custom `DeadManSwitch` condition contract on top so the read side opens to a named beneficiary on a proof-of-life timer instead of always pointing at the original owner.
+
 ## Run it locally
 
 ```bash
