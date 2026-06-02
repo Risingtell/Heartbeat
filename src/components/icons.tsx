@@ -137,6 +137,93 @@ export function LinkIcon({ className = "", size = 24 }: IconProps) {
   );
 }
 
+/** Heartbeat-vault brand mark: a vault shield with a proof-of-life pulse. */
+export function BrandMark({ className = "", size = 24 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M12 2.4L4 5.3V11c0 4.8 3.4 9 8 10.6 4.6-1.6 8-5.8 8-10.6V5.3L12 2.4z"
+        fill="currentColor"
+        fillOpacity="0.12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.6 12.3h2.2l1.2-3.1 1.9 6.1 1.3-3h2.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function KeyIcon({ className = "", size = 24 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <circle cx="8" cy="8" r="4.2" />
+      <path d="M11 11l7.5 7.5M15.5 15.5l2-2M17.5 17.5l2-2" />
+    </svg>
+  );
+}
+
+/** Secret split across a network of enclaves (one node fanning into three). */
+export function NetworkIcon({ className = "", size = 24 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M12 7.4v8.4M12 7.4L5.5 15.6M12 7.4L18.5 15.6" />
+      <circle cx="12" cy="5.2" r="2.2" fill="currentColor" fillOpacity="0.12" />
+      <circle cx="5" cy="17.8" r="2.2" fill="currentColor" fillOpacity="0.12" />
+      <circle
+        cx="12"
+        cy="17.8"
+        r="2.2"
+        fill="currentColor"
+        fillOpacity="0.12"
+      />
+      <circle
+        cx="19"
+        cy="17.8"
+        r="2.2"
+        fill="currentColor"
+        fillOpacity="0.12"
+      />
+    </svg>
+  );
+}
+
 /** Decorative ring of dots around a focal element (hero ornament). */
 export function HaloRing({ className = "", size = 200 }: IconProps) {
   const dots = 24;
@@ -155,8 +242,19 @@ export function HaloRing({ className = "", size = 200 }: IconProps) {
         const angle = (i / dots) * Math.PI * 2 - Math.PI / 2;
         const x = cx + r * Math.cos(angle);
         const y = cy + r * Math.sin(angle);
-        const opacity = 0.18 + 0.5 * (1 - Math.abs(((i + dots / 4) % dots) - dots / 2) / (dots / 2));
-        return <circle key={i} cx={x} cy={y} r={1.6} fill="currentColor" opacity={opacity} />;
+        const opacity =
+          0.18 +
+          0.5 * (1 - Math.abs(((i + dots / 4) % dots) - dots / 2) / (dots / 2));
+        return (
+          <circle
+            key={i}
+            cx={x}
+            cy={y}
+            r={1.6}
+            fill="currentColor"
+            opacity={opacity}
+          />
+        );
       })}
     </svg>
   );
