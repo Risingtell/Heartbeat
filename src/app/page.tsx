@@ -82,42 +82,39 @@ export default function Home() {
 
         {/* ─────────────────────────────  Stat band  ───────────────────────────── */}
         <FadeUp as="section" className="border-y border-border bg-surface-2">
-          <div className="mx-auto max-w-5xl px-5 py-14 grid sm:grid-cols-3 gap-10 sm:gap-6 text-center">
+          <div className="mx-auto max-w-5xl px-5 py-20 grid sm:grid-cols-3 gap-12 sm:gap-10 text-center">
             <div>
-              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+              <div className="font-display text-4xl sm:text-5xl text-accent-deep leading-none">
                 ~20%
               </div>
-              <p className="mt-3 text-sm text-muted leading-relaxed">
-                of all bitcoin is already lost forever — most of it keys that
-                died with their owner.
-                <span className="block mt-1 text-[11px] text-muted-soft">
+              <p className="mt-4 text-sm text-muted leading-relaxed">
+                of all bitcoin is already lost forever. Most of it keys that died with their owner.
+                <span className="block mt-1.5 text-[11px] text-muted-soft">
                   Widely cited industry estimate
                 </span>
               </p>
             </div>
             <div>
-              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+              <div className="font-display text-4xl sm:text-5xl text-accent-deep leading-none">
                 0
               </div>
-              <p className="mt-3 text-sm text-muted leading-relaxed">
-                people who can ever see your secret while you&apos;re checking
-                in — not even us.
+              <p className="mt-4 text-sm text-muted leading-relaxed">
+                people can ever see your secret while you&apos;re checking in. Not even us.
               </p>
             </div>
             <div>
-              <div className="font-display text-5xl sm:text-6xl text-accent-deep leading-none">
+              <div className="font-display text-4xl sm:text-5xl text-accent-deep leading-none">
                 1 email
               </div>
-              <p className="mt-3 text-sm text-muted leading-relaxed">
-                is all your heir needs to recover it — no wallet, no seed
-                phrase, no lawyer.
+              <p className="mt-4 text-sm text-muted leading-relaxed">
+                is all your heir needs to recover it. No wallet, no seed phrase, no lawyer.
               </p>
             </div>
           </div>
         </FadeUp>
 
         {/* ──────────────────────  Dashboard preview  ────────────────────── */}
-        <FadeUp as="section" className="relative pb-24">
+        <FadeUp as="section" className="relative pt-20 pb-28">
           <div className="dot-grid absolute inset-0 -z-10 opacity-60" />
           <div className="mx-auto max-w-4xl px-5">
             <div className="rounded-3xl border border-border bg-surface shadow-2xl overflow-hidden">
@@ -188,16 +185,13 @@ export default function Home() {
 
         {/* ─────────────────────  How it works  ────────────────────── */}
         <section className="border-y border-border bg-surface">
-          <div className="mx-auto max-w-6xl px-5 py-24">
+          <div className="mx-auto max-w-6xl px-5 py-28 sm:py-32">
             <FadeUp className="text-center max-w-2xl mx-auto">
               <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">
                 How it works
               </p>
               <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
-                Three steps.{" "}
-                <span className="font-display italic font-normal text-accent-deep">
-                  No trust required.
-                </span>
+                Three steps. No trust required.
               </h2>
             </FadeUp>
 
@@ -241,17 +235,13 @@ export default function Home() {
         </section>
 
         {/* ─────────────────────  Feature grid  ────────────────────── */}
-        <section className="mx-auto max-w-6xl px-5 py-24">
+        <section className="mx-auto max-w-6xl px-5 py-28 sm:py-32">
           <FadeUp className="text-center max-w-2xl mx-auto">
             <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">
               What makes it different
             </p>
             <h2 className="mt-3 text-3xl sm:text-5xl font-semibold tracking-tight">
-              Built like{" "}
-              <span className="font-display italic font-normal text-accent-deep">
-                infrastructure
-              </span>
-              , designed for humans.
+              Built like infrastructure, designed for humans.
             </h2>
           </FadeUp>
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -304,7 +294,7 @@ export default function Home() {
 
         {/* ─────────────────────  Trust math  ────────────────────── */}
         <section className="border-y border-border bg-surface-2">
-          <div className="mx-auto max-w-3xl px-5 py-24 text-center">
+          <div className="mx-auto max-w-3xl px-5 py-28 sm:py-32 text-center">
             <FadeUp>
               <p className="text-[11px] uppercase tracking-[0.18em] text-accent-deep font-medium">
                 The security model
@@ -352,7 +342,7 @@ export default function Home() {
         {/* ─────────────────────  Final CTA  ────────────────────── */}
         <FadeUp
           as="section"
-          className="mx-auto max-w-3xl px-5 py-28 text-center"
+          className="mx-auto max-w-3xl px-5 py-32 sm:py-36 text-center"
         >
           <div className="relative inline-flex items-center justify-center mb-7">
             <HaloRing className="absolute text-accent" size={180} />
