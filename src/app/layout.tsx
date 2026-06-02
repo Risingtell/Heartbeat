@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { FloatingHelp } from "@/components/FloatingHelp";
+import { BackToTop } from "@/components/BackToTop";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full flex flex-col bg-[--background] text-[--foreground]">
         <Providers>
           {children}
+          <BackToTop />
           <FloatingHelp />
         </Providers>
       </body>
