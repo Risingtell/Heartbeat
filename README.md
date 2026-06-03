@@ -51,8 +51,6 @@ Heartbeat fixes this with three properties:
 
 ## What it looks like
 
-> Screenshots live in [`public/screenshots/`](public/screenshots). To populate them, see the [capture guide there](public/screenshots/README.md).
-
 <table>
   <tr>
     <td width="50%" align="center">
@@ -61,23 +59,13 @@ Heartbeat fixes this with three properties:
     </td>
     <td width="50%" align="center">
       <img src="public/screenshots/setup.png" alt="Set up your vault" />
-      <br /><em>Setting up a vault</em>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" align="center">
-      <img src="public/screenshots/dashboard.png" alt="Owner dashboard" />
-      <br /><em>Owner dashboard with proof-of-life status</em>
-    </td>
-    <td width="50%" align="center">
-      <img src="public/screenshots/claim-inbox.png" alt="Beneficiary inbox" />
-      <br /><em>Beneficiary inheritance inbox</em>
+      <br /><em>Sealing a vault to an email beneficiary</em>
     </td>
   </tr>
   <tr>
     <td colspan="2" align="center">
-      <img src="public/screenshots/revealed.png" alt="Secret revealed" width="70%" />
-      <br /><em>The recovered secret reveal</em>
+      <img src="public/screenshots/claim-inbox.png" alt="Beneficiary inheritance inbox" width="75%" />
+      <br /><em>Beneficiary view: vaults sealed for you show up after signing in, no claim link needed</em>
     </td>
   </tr>
 </table>
